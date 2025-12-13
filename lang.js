@@ -23,6 +23,15 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Слушаем изменения системной темы
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+    if (!localStorage.getItem("theme")) {
+      const newTheme = event.matches ? 'dark' : 'light';
+      htmlElement.setAttribute("data-theme", newTheme);
+      updateThemeButtonState(newTheme);
+    }
+  });
+
   function updateThemeButtonState(theme) {
     if (themeToggle) {
       themeToggle.setAttribute("aria-pressed", theme === "dark" ? "true" : "false");
