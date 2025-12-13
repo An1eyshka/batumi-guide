@@ -34,7 +34,7 @@
 [data-theme="light"] {
   /* ========= СВЕТЛАЯ ТЕМА (синяя гамма) ========= */
   --bg-primary: #f0f8ff;                 /* Светлый фон страницы */
-  --bg-card: rgb(255 255 255 / 52%);  /* Прозрачные белые карточки */
+  --bg-card: rgb(255 255 255 / 64%);  /* Прозрачные белые карточки */
   --text-primary: #1e293b;               /* Темно-синий основной текст */
   --text-secondary: #475569;             /* Серо-синий вторичный текст */
   --text-title: #1e40af;                 /* Синий цвет заголовков */
@@ -49,6 +49,7 @@
   --bg-image: url("img/batumi-light.jpg"); /* Светлое фоновое изображение */
   --bg-image-mobile: url("img/batumi-light.jpg"); /* Светлое изображение для мобилок */
   --icon-color: rgba(59, 130, 246, 0.95); /* Синий цвет иконок */
+    
 }
 
 /* ============================================
@@ -280,7 +281,7 @@ body {
     background-color: var(--bg-card);
     border-radius: 16px;
     padding: 14px 16px 12px;
-    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.65); /* Тень для объемности */
+    box-shadow: 0 18px 45px rgb(0 0 0 / 0%); /* Тень для объемности */
     border: 1px solid var(--border);
     display: flex;
     flex-direction: column;
