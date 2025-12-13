@@ -1,33 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
-
+<!-- 
+  ============================================
+  ЗАГОЛОВОК ДОКУМЕНТА (HEAD)
+  Здесь настраиваются метаданные, подключаются стили и скрипты
+  ============================================ 
+-->
 <head>
+    <!-- Кодировка символов (обязательно должна быть первой в head) -->
     <meta charset="utf-8" />
+    
+    <!-- Заголовок страницы (отображается во вкладке браузера) -->
     <title>Our Places in Batumi</title>
+    
+    <!-- Настройка адаптивности для мобильных устройств -->
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    
+    <!-- Описание страницы для поисковых систем -->
     <meta name="description" content="Our favorite places in Batumi - cafes, restaurants, attractions and trips">
+    
+    <!-- Open Graph теги для соцсетей (при расшаривании ссылки) -->
     <meta property="og:title" content="Our Places in Batumi">
     <meta property="og:image" content="img/batumi-night.jpg">
     
-    <!-- Favicon (добавьте свои файлы favicon) -->
+    <!-- Иконки сайта (favicon) -->
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     
+    <!-- Подключаем библиотеку Swiper для слайдеров -->
     <link rel="stylesheet" href="https://unpkg.com/swiper@11/swiper-bundle.min.css" />
+    
+    <!-- Подключаем наш основной файл стилей -->
     <link rel="stylesheet" href="style.css" />
 </head>
 
+<!-- 
+  ============================================
+  ТЕЛО ДОКУМЕНТА (BODY)
+  Здесь находится весь видимый контент страницы
+  ============================================ 
+-->
 <body>
+    <!-- Основная обертка для всей страницы -->
     <div id="wrapper">
+        <!-- Страница с фоновым изображением -->
         <div class="page">
+            
+            <!-- 
+              ============================================
+              ШАПКА САЙТА (HEADER)
+              Содержит кнопку переключения темы
+              ============================================ 
+            -->
             <header id="header" class="site-header">
                 <div class="container header-inner">
+                    <!-- 
+                      КНОПКА ПЕРЕКЛЮЧЕНИЯ ТЕМЫ 
+                      При клике меняет тему с темной на светлую и обратно
+                    -->
                     <button type="button" class="theme-btn" id="theme-toggle" 
                             aria-label="Switch theme" aria-pressed="false">
+                        <!-- Иконка солнца (отображается в светлой теме) -->
                         <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                             <path d="M12 17C14.7614 17 17 14.7614 17 12C17 9.23858 14.7614 7 12 7C9.23858 7 7 9.23858 7 12C7 14.7614 9.23858 17 12 17Z" stroke="currentColor" stroke-width="2"/>
                             <path d="M12 1V3M12 21V23M4.22 4.22L5.64 5.64M18.36 18.36L19.78 19.78M1 12H3M21 12H23M4.22 19.78L5.64 18.36M18.36 5.64L19.78 4.22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                         </svg>
+                        <!-- Иконка луны (отображается в темной теме) -->
                         <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                             <path d="M21 12.79C20.8427 14.492 20.2039 16.1144 19.1582 17.4668C18.1126 18.8192 16.7035 19.8458 15.0957 20.4265C13.4879 21.0073 11.7479 21.1181 10.0795 20.7461C8.41101 20.3741 6.88299 19.5345 5.67422 18.3258C4.46545 17.117 3.62594 15.589 3.2539 13.9205C2.88186 12.252 2.99274 10.5121 3.57348 8.9043C4.15423 7.29651 5.18085 5.88737 6.53324 4.84175C7.88562 3.79614 9.50799 3.15731 11.21 3C10.2134 4.34827 9.73385 6.00945 9.85847 7.68141C9.98308 9.35338 10.7039 10.9251 11.8894 12.1106C13.0749 13.2961 14.6466 14.0169 16.3186 14.1415C17.9906 14.2662 19.6517 13.7866 21 12.79Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
@@ -35,18 +73,33 @@
                 </div>
             </header>
 
+            <!-- 
+              ============================================
+              ОСНОВНОЕ СОДЕРЖИМОЕ (MAIN CONTENT)
+              Здесь находятся все секции с местами
+              ============================================ 
+            -->
             <div id="main">
                 <main class="page-main">
-                    <!-- SECTION 1: WHERE TO EAT -->
+                    
+                    <!-- 
+                      СЕКЦИЯ 1: ГДЕ ПОЕСТЬ (КАФЕ И РЕСТОРАНЫ)
+                      Это первая категория мест - заведения питания
+                    -->
                     <section id="where-to-eat" class="category-section">
                         <div class="inner">
+                            <!-- Заголовок секции -->
                             <header class="major">
                                 <h2 class="category-title">Cafes and Restaurants</h2>
                                 <p class="category-description">Our favorite places in Batumi to grab food.</p>
                             </header>
 
+                            <!-- Слайдер с карточками мест -->
                             <div class="swiper eat-slider">
+                                <!-- Контейнер для слайдов -->
                                 <div class="swiper-wrapper">
+                                    
+                                    <!-- СЛАЙД 1: Laguna -->
                                     <div class="swiper-slide">
                                         <article class="place-card">
                                             <div class="place-header">
@@ -54,8 +107,7 @@
                                                 <span class="place-type">Restaurant</span>
                                             </div>
                                             <p class="place-tags">Adjarian khachapuri - Local vibe</p>
-                                            <p class="place-desc">Classic spot for Adjarian khachapuri. Simple, tasty,
-                                                very Batumi.</p>
+                                            <p class="place-desc">Classic spot for Adjarian khachapuri. Simple, tasty, very Batumi.</p>
                                             <div class="place-meta">
                                                 <a class="place-map-btn"
                                                     href="https://www.google.com/maps/place/Laguna+Batumi/"
@@ -64,6 +116,7 @@
                                         </article>
                                     </div>
 
+                                    <!-- СЛАЙД 2: Grill Town -->
                                     <div class="swiper-slide">
                                         <article class="place-card">
                                             <div class="place-header">
@@ -71,8 +124,7 @@
                                                 <span class="place-type">Restaurant</span>
                                             </div>
                                             <p class="place-tags">Meat & grill - Big portions</p>
-                                            <p class="place-desc">Good place for grilled meat and khinkali. Works well
-                                                for a hearty dinner.</p>
+                                            <p class="place-desc">Good place for grilled meat and khinkali. Works well for a hearty dinner.</p>
                                             <div class="place-meta">
                                                 <a class="place-map-btn"
                                                     href="https://www.google.com/maps/place/Grill+Town+Batumi/"
@@ -81,6 +133,7 @@
                                         </article>
                                     </div>
 
+                                    <!-- СЛАЙД 3: Heart of Batumi -->
                                     <div class="swiper-slide">
                                         <article class="place-card">
                                             <div class="place-header">
@@ -88,8 +141,7 @@
                                                 <span class="place-type">Restaurant - Wine bar</span>
                                             </div>
                                             <p class="place-tags">Georgian dishes - Cozy terrace</p>
-                                            <p class="place-desc">Small place with local food and relaxed atmosphere
-                                                right in the center.</p>
+                                            <p class="place-desc">Small place with local food and relaxed atmosphere right in the center.</p>
                                             <div class="place-meta">
                                                 <a class="place-map-btn"
                                                     href="https://www.google.com/maps/search/Heart+of+Batumi/"
@@ -98,6 +150,7 @@
                                         </article>
                                     </div>
 
+                                    <!-- СЛАЙД 4: Wine Room -->
                                     <div class="swiper-slide">
                                         <article class="place-card">
                                             <div class="place-header">
@@ -105,8 +158,7 @@
                                                 <span class="place-type">Wine bar</span>
                                             </div>
                                             <p class="place-tags">Georgian wine - Snacks</p>
-                                            <p class="place-desc">Nice spot to try different Georgian wines with simple
-                                                tapas-style snacks.</p>
+                                            <p class="place-desc">Nice spot to try different Georgian wines with simple tapas-style snacks.</p>
                                             <div class="place-meta">
                                                 <a class="place-map-btn"
                                                     href="https://www.google.com/maps/search/Wine+Room+Batumi/"
@@ -115,6 +167,7 @@
                                         </article>
                                     </div>
 
+                                    <!-- СЛАЙД 5: Adjarian House -->
                                     <div class="swiper-slide">
                                         <article class="place-card">
                                             <div class="place-header">
@@ -122,8 +175,7 @@
                                                 <span class="place-type">Restaurant</span>
                                             </div>
                                             <p class="place-tags">Khinkali - Khachapuri - Local food</p>
-                                            <p class="place-desc">Lively place with classic Georgian dishes and big
-                                                portions. Good for a casual dinner.</p>
+                                            <p class="place-desc">Lively place with classic Georgian dishes and big portions. Good for a casual dinner.</p>
                                             <div class="place-meta">
                                                 <a class="place-map-btn"
                                                     href="https://www.google.com/maps/search/Adjarian+House+Batumi/"
@@ -131,15 +183,21 @@
                                             </div>
                                         </article>
                                     </div>
+                                    
                                 </div>
+                                <!-- Пагинация для слайдера (точки внизу) -->
                                 <div class="swiper-pagination eat-pagination"></div>
                             </div>
 
+                            <!-- Кнопка "Показать еще" для этой секции -->
                             <button class="show-more-btn" type="button">Show more</button>
                         </div>
                     </section>
 
-                    <!-- SECTION 2: IN THE CITY -->
+                    <!-- 
+                      СЕКЦИЯ 2: В ГОРОДЕ (ДОСТОПРИМЕЧАТЕЛЬНОСТИ)
+                      Вторая категория - места для прогулок и осмотра
+                    -->
                     <section id="in-the-city" class="category-section">
                         <div class="inner">
                             <header class="major">
@@ -147,8 +205,11 @@
                                 <p class="category-description">Walks, viewpoints, cozy streets in Batumi.</p>
                             </header>
 
+                            <!-- Слайдер для мест в городе -->
                             <div class="swiper city-slider">
                                 <div class="swiper-wrapper">
+                                    
+                                    <!-- СЛАЙД 1: Batumi Boulevard -->
                                     <div class="swiper-slide">
                                         <article class="place-card">
                                             <div class="place-header">
@@ -163,6 +224,7 @@
                                         </article>
                                     </div>
 
+                                    <!-- СЛАЙД 2: Alphabet Tower -->
                                     <div class="swiper-slide">
                                         <article class="place-card">
                                             <div class="place-header">
@@ -177,6 +239,7 @@
                                         </article>
                                     </div>
 
+                                    <!-- СЛАЙД 3: Ferris wheel -->
                                     <div class="swiper-slide">
                                         <article class="place-card">
                                             <div class="place-header">
@@ -191,6 +254,7 @@
                                         </article>
                                     </div>
 
+                                    <!-- СЛАЙД 4: Old Batumi -->
                                     <div class="swiper-slide">
                                         <article class="place-card">
                                             <div class="place-header">
@@ -205,6 +269,7 @@
                                         </article>
                                     </div>
 
+                                    <!-- СЛАЙД 5: Dancing fountains -->
                                     <div class="swiper-slide">
                                         <article class="place-card">
                                             <div class="place-header">
@@ -218,6 +283,7 @@
                                             </div>
                                         </article>
                                     </div>
+                                    
                                 </div>
                                 <div class="swiper-pagination city-pagination"></div>
                             </div>
@@ -226,7 +292,10 @@
                         </div>
                     </section>
 
-                    <!-- SECTION 3: NATURE / TRIPS -->
+                    <!-- 
+                      СЕКЦИЯ 3: ПРИРОДА / ПОЕЗДКИ
+                      Третья категория - природа и поездки за город
+                    -->
                     <section id="nature-trips" class="category-section">
                         <div class="inner">
                             <header class="major">
@@ -236,6 +305,8 @@
 
                             <div class="swiper nature-slider">
                                 <div class="swiper-wrapper">
+                                    
+                                    <!-- СЛАЙД 1: Batumi Botanical Garden -->
                                     <div class="swiper-slide">
                                         <article class="place-card">
                                             <div class="place-header">
@@ -250,6 +321,7 @@
                                         </article>
                                     </div>
 
+                                    <!-- СЛАЙД 2: Mtirala National Park -->
                                     <div class="swiper-slide">
                                         <article class="place-card">
                                             <div class="place-header">
@@ -264,6 +336,7 @@
                                         </article>
                                     </div>
 
+                                    <!-- СЛАЙД 3: Machakhela Valley -->
                                     <div class="swiper-slide">
                                         <article class="place-card">
                                             <div class="place-header">
@@ -278,6 +351,7 @@
                                         </article>
                                     </div>
 
+                                    <!-- СЛАЙД 4: Green Lake -->
                                     <div class="swiper-slide">
                                         <article class="place-card">
                                             <div class="place-header">
@@ -292,6 +366,7 @@
                                         </article>
                                     </div>
 
+                                    <!-- СЛАЙД 5: Makhuntseti waterfall -->
                                     <div class="swiper-slide">
                                         <article class="place-card">
                                             <div class="place-header">
@@ -305,6 +380,7 @@
                                             </div>
                                         </article>
                                     </div>
+                                    
                                 </div>
                                 <div class="swiper-pagination nature-pagination"></div>
                             </div>
@@ -313,7 +389,10 @@
                         </div>
                     </section>
 
-                    <!-- SECTION 4: WHAT TO BUY ON THE STREET -->
+                    <!-- 
+                      СЕКЦИЯ 4: ЧТО КУПИТЬ НА УЛИЦЕ
+                      Четвертая категория - уличная еда и продукты
+                    -->
                     <section id="street-food" class="category-section">
                         <div class="inner">
                             <header class="major">
@@ -323,6 +402,8 @@
 
                             <div class="swiper street-slider">
                                 <div class="swiper-wrapper">
+                                    
+                                    <!-- СЛАЙД 1: Churchkhela -->
                                     <div class="swiper-slide">
                                         <article class="place-card">
                                             <div class="place-header">
@@ -337,6 +418,7 @@
                                         </article>
                                     </div>
 
+                                    <!-- СЛАЙД 2: Sulguni cheese -->
                                     <div class="swiper-slide">
                                         <article class="place-card">
                                             <div class="place-header">
@@ -351,6 +433,7 @@
                                         </article>
                                     </div>
 
+                                    <!-- СЛАЙД 3: Adjika & spices -->
                                     <div class="swiper-slide">
                                         <article class="place-card">
                                             <div class="place-header">
@@ -365,6 +448,7 @@
                                         </article>
                                     </div>
 
+                                    <!-- СЛАЙД 4: Local wine -->
                                     <div class="swiper-slide">
                                         <article class="place-card">
                                             <div class="place-header">
@@ -379,6 +463,7 @@
                                         </article>
                                     </div>
 
+                                    <!-- СЛАЙД 5: Seasonal fruits -->
                                     <div class="swiper-slide">
                                         <article class="place-card">
                                             <div class="place-header">
@@ -392,6 +477,7 @@
                                             </div>
                                         </article>
                                     </div>
+                                    
                                 </div>
                                 <div class="swiper-pagination street-pagination"></div>
                             </div>
@@ -399,9 +485,16 @@
                             <button class="show-more-btn" type="button">Show more</button>
                         </div>
                     </section>
+                    
                 </main>
             </div>
 
+            <!-- 
+              ============================================
+              ПОДВАЛ САЙТА (FOOTER)
+              Содержит ссылку на Airbnb
+              ============================================ 
+            -->
             <footer id="footer" class="site-footer">
                 <p class="footer-line">
                     <a class="footer-link"
@@ -414,7 +507,17 @@
         </div>
     </div>
 
+    <!-- 
+      ============================================
+      ПОДКЛЮЧЕНИЕ СКРИПТОВ
+      Все скрипты подключаются в конце body для быстрой загрузки
+      ============================================ 
+    -->
+    
+    <!-- Библиотека Swiper для работы слайдеров -->
     <script src="https://unpkg.com/swiper@11/swiper-bundle.min.js"></script>
+    
+    <!-- Наш основной JavaScript файл с логикой приложения -->
     <script src="lang.js"></script>
 </body>
 
