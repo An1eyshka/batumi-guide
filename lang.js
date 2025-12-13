@@ -85,28 +85,33 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // Выравнивание высоты карточек
+    // Выравнивание высоты карточек с учетом фото Laguna
     function equalizeCardHeights() {
       setTimeout(() => {
         document.querySelectorAll(".swiper").forEach((slider) => {
           const cards = slider.querySelectorAll(".place-card");
           if (!cards.length) return;
 
-          cards.forEach(c => c.style.minHeight = "");
-
-          let maxHeight = 0;
-          cards.forEach(c => {
-            const height = c.offsetHeight;
-            maxHeight = Math.max(maxHeight, height);
-          });
-
-          if (maxHeight > 0) {
+          // Временный сброс высоты
+          cards.forEach(c => c.style.minHeight = '');
+          
+          // Даем время на пересчет
+          setTimeout(() => {
+            let maxHeight = 0;
             cards.forEach(c => {
-              c.style.minHeight = `${maxHeight}px`;
+              const height = c.offsetHeight;
+              maxHeight = Math.max(maxHeight, height);
             });
-          }
+
+            // Устанавливаем одинаковую высоту для всех карточек
+            if (maxHeight > 0) {
+              cards.forEach(c => {
+                c.style.minHeight = `${maxHeight}px`;
+              });
+            }
+          }, 50);
         });
-      }, 100);
+      }, 200); // Больше времени для загрузки фото
     }
 
     equalizeCardHeights();
@@ -114,7 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let resizeTimeout;
     window.addEventListener("resize", () => {
       clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(equalizeCardHeights, 150);
+      resizeTimeout = setTimeout(equalizeCardHeights, 200);
     });
   }
 
