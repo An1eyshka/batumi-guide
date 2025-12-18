@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.venv/
+.env
+batumi_guide.db
+img/uploads/

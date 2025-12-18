@@ -1,0 +1,913 @@
+/* ============================================
+   STYLES.CSS
+   Это основной файл стилей для сайта (Batumi Guide).
+   Здесь мы определяем цвета, шрифты, отступы и внешний вид всех элементов.
+   ============================================ */
+
+/* ============================================
+   БАЗОВЫЕ СТИЛИ И СБРОС (RESET)
+   Убираем стандартные отступы браузеров и делаем поведение блоков предсказуемым.
+   ============================================ */
+/* Сброс box-sizing для всех элементов: padding и border не увеличивают размер элемента */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* ============================================
+   CSS ПЕРЕМЕННЫЕ (VARIABLES)
+   Здесь мы задаем цвета для темной и светлой темы.
+   Переменные позволяют легко менять дизайн в одном месте.
+   ============================================ */
+:root {
+    /* ========= ТЕМНАЯ ТЕМА (по умолчанию) ========= */
+    --bg-primary: #020617;
+    /* Основной фон страницы */
+    --bg-card: rgba(24, 0, 37, 0.58);
+    /* Фон карточек мест */
+    --text-primary: #e5e7eb;
+    /* Основной цвет текста */
+    --text-secondary: #b8b1d5;
+    /* Вторичный текст (описания) */
+    --text-title: #f9f9fb;
+    /* Цвет заголовков */
+    --text-tags: #c5b3e6;
+    /* Цвет тегов */
+    --accent: #9d4edd;
+    /* Основной акцентный цвет */
+    --accent-light: #c77dff;
+    /* Светлый акцентный цвет */
+    --border: rgba(157, 78, 221, 0.45);
+    /* Цвет границ */
+    --bullet-inactive: rgba(157, 78, 221, 0.35);
+    /* Неактивные точки пагинации */
+    --bullet-active: #c77dff;
+    /* Активные точки пагинации */
+    --button-text: #eadeff;
+    /* Цвет текста на кнопках */
+    --button-border: #9d4edd;
+    /* Цвет границ кнопок */
+    --bg-image: url("img/batumi-night.jpg");
+    /* Фоновое изображение для десктопов (ПК) */
+    --bg-image-mobile: url("img/batumi-night_v_2_adaptiv_mobile.jpg");
+    /* Фоновое изображение для мобильных телефонов */
+    --icon-color: rgba(199, 125, 255, 0.95);
+    /* Основной цвет иконок */
+    --card-height: auto;
+    --card-min-height: 180px;
+    /* Цвет иконок в шапке */
+}
+
+[data-theme="light"] {
+    /* ========= СВЕТЛАЯ ТЕМА (синяя гамма) ========= */
+    --bg-primary: #f0f8ff;
+    /* Светлый фон страницы */
+    --bg-card: rgb(255 255 255 / 64%);
+    /* Прозрачные белые карточки */
+    --text-primary: #1e293b;
+    /* Темно-синий основной текст */
+    --text-secondary: #475569;
+    /* Серо-синий вторичный текст */
+    --text-title: #1e40af;
+    /* Синий цвет заголовков */
+    --text-tags: #4f46e5;
+    /* Фиолетово-синие теги */
+    --accent: #2563eb;
+    /* Основной синий акцент */
+    --accent-light: #3b82f6;
+    /* Светло-синий акцент */
+    --border: rgba(59, 130, 246, 0.3);
+    /* Прозрачные синие границы */
+    --bullet-inactive: rgb(59 130 246 / 23%);
+    /* Неактивные синие точки */
+    --bullet-active: #3b46f6;
+    /* Активные синие точки */
+    --button-text: #1e40af;
+    /* Темно-синий текст кнопок */
+    --button-border: #3b82f6;
+    /* Синие границы кнопок */
+    --bg-image: url("img/batumi-light.jpg");
+    /* Светлое фоновое изображение */
+    --bg-image-mobile: url("img/batumi-light.jpg");
+    /* Светлое изображение для мобилок */
+    --icon-color: rgba(59, 130, 246, 0.95);
+    /* Синий цвет иконок */
+
+}
+
+/* ============================================
+   АНИМАЦИИ И ПЕРЕХОДЫ
+   ============================================ */
+/* Плавный переход для смены темы на уровне всего документа */
+html[data-theme] {
+    transition: background-color 0.3s ease;
+}
+
+/* Плавные переходы для основных элементов интерфейса */
+body,
+.site-header,
+.place-card,
+.theme-btn,
+.lang-btn,
+.place-map-btn {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+/* Стили для фокуса (доступность) */
+.theme-btn:focus-visible,
+.lang-btn:focus-visible,
+.place-map-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* ============================================
+   ОСНОВНЫЕ СТИЛИ ДОКУМЕНТА
+   ============================================ */
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+    -webkit-tap-highlight-color: transparent;
+    /* Убираем подсветку при тапе на мобильных */
+}
+
+/* ============================================
+   ФОНОВЫЙ СЛОЙ С ИЗОБРАЖЕНИЕМ
+   ============================================ */
+.page {
+    min-height: 100vh;
+    /* Минимальная высота - весь экран */
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 0;
+}
+
+/* Псевдоэлемент для фонового изображения */
+.page::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    /* Заполняет весь родительский элемент */
+    background-image: var(--bg-image);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    background-attachment: fixed;
+    z-index: -1;
+    /* Помещаем фон под контент */
+    transform: translateZ(0);
+    will-change: transform;
+}
+
+/* ============================================
+   КОНТЕЙНЕРЫ И ОБЕРТКИ
+   ============================================ */
+.container,
+.inner {
+    width: 100%;
+    max-width: 1100px;
+    /* Максимальная ширина контента */
+    margin: 0 auto;
+    /* Центрирование по горизонтали */
+    padding: 0 16px;
+    /* Отступы по бокам */
+}
+
+.container.header-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0px;
+    padding-left: 0;
+    /* Fully flushed left */
+}
+
+
+/* ============================================
+   ШАПКА САЙТА (TOP BAR)
+   ============================================ */
+.topbar {
+    position: sticky;
+    /* Липкая шапка при скролле */
+    top: 0;
+    z-index: 999999;
+    /* Очень высокий z-index поверх всего */
+    background: transparent;
+    /* Прозрачный фон */
+    border: none;
+    backdrop-filter: none;
+    /* Отключаем размытие фона */
+    -webkit-backdrop-filter: none;
+}
+
+/* Внутренний контейнер шапки */
+.topbar-inner {
+    height: 44px;
+    /* Фиксированная высота шапки */
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: max(6px, env(safe-area-inset-top));
+    /* Учет безопасной зоны на iOS */
+}
+
+/* ============================================
+   Header Controls (Glassmorphism Pill)
+   ============================================ */
+.header-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    /* Уменьшенный отступ между элементами */
+    padding: 3px 8px;
+    /* Ультра-компактные внутренние отступы */
+    background: transparent;
+    /* Прозрачный фон */
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-radius: 999px;
+    border: none;
+    box-shadow: none;
+    /* Убираем тень */
+    margin-top: 4px;
+    margin-left: -4px;
+    /* Небольшой сдвиг влево для выравнивания */
+}
+
+.control-separator {
+    width: 1px;
+    height: 12px;
+    background-color: var(--icon-color);
+    opacity: 0.3;
+}
+
+
+
+.theme-btn {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--icon-color);
+    opacity: 1;
+    /* Explicit opacity */
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+    margin: 0;
+    /* Reset margin */
+}
+
+/* Эффекты при наведении и нажатии */
+.theme-btn:hover {
+    transform: scale(1.05);
+    opacity: 0.95;
+}
+
+.theme-btn:active {
+    transform: scale(0.95);
+}
+
+.lang-btn {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    border-radius: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--icon-color);
+    opacity: 1;
+    /* Full opacity */
+    cursor: pointer;
+    transform: none;
+    /* Reset transform */
+}
+
+.lang-btn .lang-text {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    opacity: 1;
+    /* Full opacity to match icon */
+    line-height: 1;
+    color: var(--icon-color);
+    margin-top: 1px;
+    /* Slight optical adjustment */
+}
+
+.lang-btn:hover .lang-text {
+    opacity: 0.95;
+}
+
+.lang-btn:active .lang-text {
+    opacity: 0.65;
+}
+
+.back-arrow {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: var(--icon-color);
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    line-height: 1;
+    opacity: 0.9;
+    -webkit-tap-highlight-color: transparent;
+    z-index: 999999;
+}
+
+.back-arrow:hover {
+    opacity: 1;
+}
+
+.back-arrow:active {
+    opacity: 0.7;
+}
+
+/* Размер иконок внутри кнопки */
+.theme-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Управление видимостью иконок в зависимости от темы */
+.moon-icon {
+    display: block;
+}
+
+/* Иконка луны видна в темной теме */
+.sun-icon {
+    display: none;
+}
+
+/* Иконка солнца скрыта в темной теме */
+
+/* В светлой теме меняем видимость иконок */
+[data-theme="light"] .moon-icon {
+    display: none;
+}
+
+[data-theme="light"] .sun-icon {
+    display: block;
+    color: rgba(255, 204, 0, 0.95);
+    /* Желтый цвет для солнца */
+}
+
+/* ============================================
+   ОСНОВНОЕ СОДЕРЖИМОЕ СТРАНИЦЫ
+   ============================================ */
+.page-main {
+    flex: 1;
+    /* Занимает все доступное пространство */
+    padding: 0 0 24px;
+}
+
+/* ============================================
+   СЕКЦИИ С КАТЕГОРИЯМИ МЕСТ
+   ============================================ */
+.category-section {
+    padding: 0 0 10px;
+    margin-bottom: 40px;
+    /* Увеличено с 6px для лучшего разделения */
+    text-align: center;
+}
+
+/* Каждая вторая секция имеет больший отступ снизу */
+/* Каждая вторая секция имеет больший отступ снизу */
+.category-section:nth-of-type(2n) {
+    margin-bottom: 80px;
+    /* Значительно увеличено, чтобы сдвинуть 3-й блок вниз */
+}
+
+/* Специальный отступ для секции "In the city" */
+#in-the-city {
+    margin-bottom: 50px;
+}
+
+/* Заголовок категории */
+.category-title {
+    margin: 0 0 6px;
+    font-size: clamp(19px, 3.4vw, 23px);
+    /* Адаптивный размер шрифта */
+    color: var(--text-title);
+    font-weight: 700;
+    letter-spacing: -0.3px;
+}
+
+/* Описание категории */
+.category-description {
+    margin: 0 0 18px;
+    font-size: clamp(13px, 2.8vw, 15px);
+    color: var(--text-secondary);
+    opacity: 0.9;
+}
+
+/* ============================================
+   СЛАЙДЕРЫ (SWIPER)
+   ============================================ */
+.swiper {
+    width: 100%;
+    padding-bottom: 2px;
+    margin-bottom: 0px;
+    min-height: 230px;
+    /* Минимальная высота для слайдера */
+}
+
+.swiper-slide {
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+}
+
+/* Контейнер для пагинации (точек) */
+.swiper-pagination {
+    position: static;
+    /* Отключаем абсолютное позиционирование */
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    /* Расстояние между точками */
+    margin: 10px 0 12px;
+}
+
+/* Стили для отдельной точки пагинации */
+.swiper-pagination-bullet {
+    width: 9px;
+    height: 9px;
+    border-radius: 999px;
+    /* Круглая форма */
+    background-color: var(--bullet-inactive);
+    opacity: 1;
+    transform: none;
+}
+
+/* Активная точка пагинации */
+.swiper-pagination-bullet-active {
+    background-color: var(--bullet-active);
+}
+
+/* ============================================
+   КАРТОЧКИ МЕСТ
+   ============================================ */
+.place-card {
+    max-width: 420px;
+    /* Максимальная ширина карточки */
+    width: 100%;
+    background-color: var(--bg-card);
+    border-radius: 16px;
+    padding: 14px 16px 12px;
+    box-shadow: 0 18px 45px rgb(0 0 0 / 0%);
+    /* Тень для объемности */
+    border: 1px solid var(--border);
+    min-height: var(--card-min-height);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    /* Padding will be handled by .place-content */
+    box-shadow: 0 18px 45px rgb(0 0 0 / 0%);
+    /* Тень для объемности */
+    border: 1px solid var(--border);
+    min-height: var(--card-min-height);
+    display: flex;
+    flex-direction: column;
+    /* gap удален, так как используем внутренний контейнер */
+    height: 100%;
+    /* Фиксируем высоту на 100%, чтобы заполнить слайд */
+    position: relative;
+    /* Для абсолютного позиционирования фона */
+    overflow: hidden;
+    /* Обрезаем всё, что вылезает за скругления */
+}
+
+/* Слой с фоновой картинкой (на всю карточку) */
+.card-bg-layer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+.card-bg-layer img {
+    position: absolute;
+    /* Важно! Чтобы картинки накладывались друг на друга */
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: opacity 0.4s ease;
+    /* Плавный переход */
+}
+
+/* По умолчанию (темная тема): */
+.bg-dark {
+    opacity: 1;
+    z-index: 1;
+}
+
+.bg-light {
+    opacity: 0;
+    /* Скрыта в темной теме */
+    z-index: 2;
+    /* Поверх темной */
+}
+
+/* Затемняющий градиент поверх картинки, чтобы текст читался */
+.card-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0.3) 100%);
+    z-index: 1;
+}
+
+/* Контейнер для текста и кнопки - поверх фона */
+.place-content {
+    position: relative;
+    z-index: 2;
+    /* Поверх фона и оверлея */
+    padding: 14px 16px 12px;
+    /* Возвращаем отступы сюда */
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    height: 100%;
+    flex-grow: 1;
+}
+
+/* Если у карточки есть фон, меняем цвет текста на белый для читаемости */
+.place-card.has-bg-image .place-title,
+.place-card.has-bg-image .place-desc,
+.place-card.has-bg-image .place-tags {
+    color: #ffffff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    /* Тень для лучшей читаемости */
+}
+
+/* Бейдж типа места на фоне картинки */
+.place-card.has-bg-image .place-type {
+    background-color: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(4px);
+    color: #ffffff;
+}
+
+
+
+/* --- СВЕТЛАЯ ТЕМА: ЛОГИКА ФОНОВ --- */
+
+/* 1. Если у карточки НЕТ светлой версии картинки (has-dark-only) */
+[data-theme="light"] .place-card.has-dark-only .card-bg-layer {
+    display: none;
+    /* Скрываем весь фон */
+}
+
+/* Возвращаем черный текст для карточек без светлого фона */
+[data-theme="light"] .place-card.has-dark-only .place-title {
+    color: var(--text-title);
+    text-shadow: none;
+}
+
+[data-theme="light"] .place-card.has-dark-only .place-desc {
+    color: var(--text-primary);
+    text-shadow: none;
+}
+
+[data-theme="light"] .place-card.has-dark-only .place-tags {
+    color: var(--text-tags);
+    text-shadow: none;
+}
+
+[data-theme="light"] .place-card.has-dark-only .place-type {
+    background-color: var(--bullet-inactive);
+    backdrop-filter: none;
+    color: var(--button-text);
+}
+
+/* 2. Если у карточки ЕСТЬ светлая картинка (has-light-bg) */
+/* 2. Если у карточки ЕСТЬ светлая картинка (has-light-bg) */
+[data-theme="light"] .place-card.has-light-bg .bg-dark {
+    opacity: 0;
+    /* Прячем темную */
+}
+
+[data-theme="light"] .place-card.has-light-bg .bg-light {
+    opacity: 1;
+    /* Показываем светлую */
+}
+
+/* Принудительно ставим белый текст для карточек со светлым фоном (так как там оверлей) */
+[data-theme="light"] .place-card.has-light-bg .place-title,
+[data-theme="light"] .place-card.has-light-bg .place-desc,
+[data-theme="light"] .place-card.has-light-bg .place-tags {
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="light"] .place-card.has-light-bg .place-map-btn {
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.7);
+}
+
+[data-theme="light"] .place-card.has-light-bg .place-map-btn:hover {
+    background-color: #ffffff;
+    color: #000000;
+    border-color: #ffffff;
+}
+
+/* Для карточек со светлым фоном текст остается БЕЛЫМ (так как там оверлей) */
+/* Поэтому правила для цвета текста не перезаписываем */
+
+/* Шапка карточки (название и тип) */
+.place-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    align-items: baseline;
+    /* Выравнивание по базовой линии текста */
+}
+
+/* Название места */
+.place-title {
+    margin: 0;
+    font-size: 16px;
+    color: var(--text-title);
+}
+
+/* Бейдж с типом места (ресторан, парк и т.д.) */
+.place-type {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background-color: var(--bullet-inactive);
+    color: var(--button-text);
+}
+
+/* Теги места (характеристики) */
+.place-tags {
+    margin: 0;
+    font-size: 11.5px;
+    color: var(--text-tags);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+    overflow: hidden;
+}
+
+/* Описание места */
+.place-desc {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--text-primary);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+    overflow: hidden;
+    /* Межстрочный интервал */
+}
+
+/* Нижняя часть карточки с кнопкой */
+.place-meta {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: auto;
+    /* Прижимаем к низу карточки */
+    padding-top: 12px;
+}
+
+/* ============================================
+   КНОПКА "OPEN ON MAP"
+   ============================================ */
+.place-map-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 7px 14px;
+    border-radius: 999px;
+    /* Скругленные углы (круглая кнопка) */
+    border: 1px solid var(--button-border);
+    font-size: 12px;
+    text-decoration: none;
+    color: var(--button-text);
+    background-color: transparent;
+    min-width: 120px;
+    /* Минимальная ширина кнопки */
+    max-width: 280px;
+    /* Максимальная ширина кнопки */
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    /* Оптимизация для сенсорных устройств */
+    outline: none;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+/* Эффект при наведении на кнопку */
+.place-map-btn:hover {
+    background-color: var(--accent-light);
+    color: white;
+    border-color: var(--accent-light);
+}
+
+
+
+/* ============================================
+   ПОДВАЛ САЙТА (FOOTER)
+   ============================================ */
+.site-footer {
+    margin-top: 6px;
+    padding-bottom: 0;
+    text-align: center;
+    transform: translateY(-25px);
+    /* Сдвиг вверх для позиционирования */
+}
+
+/* Текст в подвале */
+.footer-line {
+    margin: 0 0 2px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* Ссылка в подвале */
+.footer-link {
+    color: var(--accent-light);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+/* Эффект при наведении на ссылку */
+.footer-link:hover {
+    text-decoration: underline;
+}
+
+/* ============================================
+   УБИРАЕМ ВЫДЕЛЕНИЕ ПРИ НАЖАТИИ НА КНОПКИ
+   ============================================ */
+/* Убираем синее выделение на iOS/Safari */
+.place-map-btn,
+.theme-btn,
+.lang-btn {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Убираем серый фон при активном состоянии (нажатии) */
+.place-map-btn:active {
+    background-color: transparent !important;
+    color: var(--button-text) !important;
+    border-color: var(--button-border) !important;
+    transform: none !important;
+}
+
+/* Для светлой темы тоже */
+[data-theme="light"] .place-map-btn:active {
+    background-color: transparent !important;
+    color: var(--button-text) !important;
+    border-color: var(--button-border) !important;
+}
+
+/* Убираем outline при фокусе (но оставляем для доступности) */
+.place-map-btn:focus:not(:focus-visible),
+.theme-btn:focus:not(:focus-visible),
+.lang-btn:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* Но оставляем для клавиатурной навигации (доступность) */
+.place-map-btn:focus-visible,
+.theme-btn:focus-visible,
+.lang-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* Убираем эффект нажатия у кнопки темы */
+.theme-btn:active {
+    transform: scale(0.95) !important;
+    opacity: 0.8 !important;
+}
+
+/* ============================================
+   МЕДИА-ЗАПРОСЫ ДЛЯ АДАПТИВНОСТИ (RESPONSIVE)
+   Здесь мы меняем стили для разных размеров экранов (телефоны, планшеты).
+   ============================================ */
+
+/* ========= ПЛАНШЕТЫ И МОБИЛЬНЫЕ УСТРОЙСТВА (до 768px по ширине) ========= */
+@media (max-width: 768px) {
+
+    .page::before {
+        background-image: var(--bg-image-mobile);
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: cover;
+        background-attachment: fixed;
+    }
+
+    /* Адаптивные отступы для секций */
+    .category-section {
+        padding: 4px 0 18px;
+        margin-bottom: 20px;
+    }
+
+    /* Специальный отступ для мобильной версии фона */
+    #nature-trips {
+        padding-top: 30px;
+    }
+}
+
+/* ========= ВЫСОКИЕ ЭКРАНЫ (от 850px по высоте) ========= */
+@media (min-height: 850px) {
+
+    /* Увеличиваем отступ для секции на высоких экранах */
+    #in-the-city {
+        margin-bottom: 106px;
+    }
+}
+
+/* ========= МОБИЛЬНЫЕ ТЕЛЕФОНЫ (узкие экраны до 480px) ========= */
+@media (max-width: 480px) {
+
+    /* Уменьшаем боковые отступы */
+    .container,
+    .inner {
+        padding: 0 14px;
+    }
+
+    /* Адаптивные отступы для секций */
+    .category-section {
+        padding: 6px 0 20px;
+        margin-bottom: 20px;
+    }
+
+    /* Уменьшаем внутренние отступы карточек */
+    .place-card {
+        padding: 14px 14px 12px;
+    }
+}
+
+/* ========= ОЧЕНЬ МАЛЕНЬКИЕ ЭКРАНЫ (до 360px) ========= */
+@media (max-width: 360px) {
+
+    /* ????????? ??????? ??? ????????? ??????? */
+    .category-section {
+        padding: 4px 0 16px;
+        margin-bottom: 16px;
+    }
+
+    /* Минималистичные карточки для очень маленьких экранов */
+    .place-card {
+        padding: 10px 10px 10px;
+        border-radius: 14px;
+    }
+
+    /* Отключаем фиксированную высоту для очень маленьких экранов */
+    /* ... existing styles ... */
+
+
+
+    /* Fix for !important removal - Increased specificity */
+    body .place-map-btn:active {
+        background-color: transparent;
+        color: var(--button-text);
+        border-color: var(--button-border);
+        transform: none;
+    }
+
+    body .theme-btn:active {
+        transform: scale(0.95);
+        opacity: 0.8;
+    }
+
+    /* Ensure images load gracefully */
+    img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+    }
+
+}

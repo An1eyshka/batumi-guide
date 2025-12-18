@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batumi Guide - Admin</title>
+    <link rel="stylesheet" href="admin.css">
+</head>
+
+<body>
+
+    <div id="app">
+        <!-- Вьюпорт авторизации -->
+        <div id="login-view" class="view hidden">
+            <div class="login-card">
+                <h2>Вход для владельца</h2>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="slug">ID Владельца (Slug)</label>
+                        <input type="text" id="slug" name="slug" placeholder="batumi-guide" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Пароль</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Войти</button>
+                    <p id="login-error" class="error-msg"></p>
+                </form>
+            </div>
+        </div>
+
+        <!-- Вьюпорт дашборда -->
+        <div id="dashboard-view" class="view hidden">
+            <header class="admin-header">
+                <div class="header-left">
+                    <h1>Управление гидом</h1>
+                    <nav class="admin-tabs">
+                        <button class="tab-btn active" data-tab="content">Контент</button>
+                        <button class="tab-btn" data-tab="stats">Статистика</button>
+                    </nav>
+                </div>
+                <div class="header-actions">
+                    <a href="/" target="_blank" class="btn-text">Открыть сайт &nearr;</a>
+                    <button id="logout-btn" class="btn-danger">Выйти</button>
+                </div>
+            </header>
+
+            <main class="admin-content">
+                <!-- Вкладка Контент -->
+                <div id="tab-content" class="tab-pane active">
+                    <div class="content-controls">
+                        <button id="refresh-btn" class="btn-secondary"
+                            onclick="adminApp.fetchContent()">Обновить</button>
+                        <button id="save-all-btn" class="btn-primary" onclick="adminApp.saveAllChanges()">Сохранить все
+                            изменения</button>
+                    </div>
+                    <div id="blocks-container" class="blocks-list">
+                        <!-- Здесь будут блоки (Где поесть, и т.д.) -->
+                        <p class="loading-text">Загрузка данных...</p>
+                    </div>
+                </div>
+
+                <!-- Вкладка Статистика -->
+                <div id="tab-stats" class="tab-pane hidden">
+                    <h2>Статистика кликов</h2>
+                    <p>Здесь будет таблица с популярными местами.</p>
+                </div>
+            </main>
+        </div>
+
+        <!-- Модальное окно редактирования -->
+        <div id="edit-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Редактирование карточки</h3>
+                    <button class="close-btn" onclick="adminApp.closeModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="edit-form">
+                        <input type="hidden" name="id">
+
+                        <div class="form-row">
+                            <div class="form-group half">
+                                <label>Заголовок (RU)</label>
+                                <input type="text" name="title_ru">
+                            </div>
+                            <div class="form-group half">
+                                <label>Заголовок (EN)</label>
+                                <input type="text" name="title_en">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group half">
+                                <label>Тип (RU)</label>
+                                <input type="text" name="type_ru">
+                            </div>
+                            <div class="form-group half">
+                                <label>Тип (EN)</label>
+                                <input type="text" name="type_en">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Ссылка (Action URL)</label>
+                            <input type="text" name="action_url">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group half">
+                                <label>Описание (RU)</label>
+                                <textarea name="desc_ru" rows="3"></textarea>
+                            </div>
+                            <div class="form-group half">
+                                <label>Описание (EN)</label>
+                                <textarea name="desc_en" rows="3"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Изображения</label>
+                            <div class="image-upload-row">
+                                <div class="upload-box">
+                                    <span>Dark/Default Img</span>
+                                    <input type="file" onchange="adminApp.uploadImage(this, 'dark')">
+                                    <input type="hidden" name="img_dark_path">
+                                    <div class="preview-img" id="preview-dark"></div>
+                                </div>
+                                <div class="upload-box">
+                                    <span>Light Theme Img</span>
+                                    <input type="file" onchange="adminApp.uploadImage(this, 'light')">
+                                    <input type="hidden" name="img_light_path">
+                                    <div class="preview-img" id="preview-light"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-secondary" onclick="adminApp.closeModal()">Отмена</button>
+                    <button class="btn-primary" onclick="adminApp.applyEdit()">Применить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+
+</html>
