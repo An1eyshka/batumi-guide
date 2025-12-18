@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Batumi Guide - Admin</title>
-    <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="admin.css?v=2">
 </head>
 
 <body>
@@ -41,7 +41,7 @@
                     </nav>
                 </div>
                 <div class="header-actions">
-                    <a href="/" target="_blank" class="btn-text">Открыть сайт &nearr;</a>
+                    <a href="http://127.0.0.1:5500/index.html" target="_blank" class="btn-text">Открыть сайт &nearr;</a>
                     <button id="logout-btn" class="btn-danger">Выйти</button>
                 </div>
             </header>
@@ -50,8 +50,7 @@
                 <!-- Вкладка Контент -->
                 <div id="tab-content" class="tab-pane active">
                     <div class="content-controls">
-                        <button id="refresh-btn" class="btn-secondary"
-                            onclick="adminApp.fetchContent()">Обновить</button>
+                        <!-- Refresh button removed as per user request -->
                         <button id="save-all-btn" class="btn-primary" onclick="adminApp.saveAllChanges()">Сохранить все
                             изменения</button>
                     </div>
@@ -145,7 +144,7 @@
         </div>
     </div>
 
-    <script src="admin.js"></script>
+    <script src="admin.js?v=2"></script>
 </body>
 
 </html>

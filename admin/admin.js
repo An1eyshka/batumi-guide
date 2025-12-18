@@ -134,27 +134,27 @@ class AdminApp {
 
     // --- Stats ---
 
-    async fetchStats() {
+    async fetchStats(period = 'all') {
         const container = document.getElementById('tab-stats');
-        // Keep header, clear content
-        container.innerHTML = '<h2>Статистика кликов</h2><p>Загрузка...</p>';
+        // Keep header, clear content (but keep controls if they exist? easier to re-render all for MVP)
+        // container.innerHTML = '<h2>Статистика кликов</h2><p>Загрузка...</p>';
 
         try {
-            const response = await fetch(`${API_URL}/admin/owners/${this.ownerId}/stats`, {
+            const response = await fetch(`${API_URL}/admin/owners/${this.ownerId}/stats?period=${period}`, {
                 headers: { "Authorization": `Bearer ${this.token}` }
             });
 
             if (!response.ok) throw new Error("Failed to fetch stats");
             const data = await response.json();
 
-            this.renderStats(data);
+            this.renderStats(data, period);
         } catch (err) {
             console.error(err);
             container.innerHTML = `<h2>Статистика кликов</h2><p style="color:red">Ошибка: ${err.message}</p>`;
         }
     }
 
-    renderStats(data) {
+    renderStats(data, currentPeriod) {
         const container = document.getElementById('tab-stats');
 
         const rows = data.top_cards.map((item, index) => `
@@ -166,11 +166,23 @@ class AdminApp {
         `).join('');
 
         container.innerHTML = `
-            <h2>Статистика кликов</h2>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <h2>Статистика кликов</h2>
+                <div style="display:flex; gap:10px;">
+                    <select id="stats-period" onchange="adminApp.fetchStats(this.value)" style="padding:0.5rem; border-radius:6px; border:1px solid #e2e8f0">
+                        <option value="all" ${currentPeriod === 'all' ? 'selected' : ''}>За все время</option>
+                        <option value="30d" ${currentPeriod === '30d' ? 'selected' : ''}>За 30 дней</option>
+                        <option value="7d" ${currentPeriod === '7d' ? 'selected' : ''}>За 7 дней</option>
+                    </select>
+                    <button class="btn-secondary" onclick="window.open('${API_URL}/admin/owners/${this.ownerId}/stats/export', '_blank')">Скачать CSV</button>
+                </div>
+            </div>
+
             <div class="stats-summary">
                 <div class="stat-box">
                     <h3>Всего кликов</h3>
                     <p class="stat-number">${data.total_clicks}</p>
+                    <p style="font-size:0.8rem; color:#64748b; margin-top:0.5rem">${currentPeriod === 'all' ? 'Всего' : 'За выбранный период'}</p>
                 </div>
             </div>
             
@@ -184,7 +196,7 @@ class AdminApp {
                     </tr>
                 </thead>
                 <tbody>
-                    ${rows.length ? rows : '<tr><td colspan="3">Нет данных</td></tr>'}
+                    ${rows.length ? rows : '<tr><td colspan="3">Нет данных за этот период</td></tr>'}
                 </tbody>
             </table>
         `;
@@ -249,22 +261,30 @@ class AdminApp {
                     <div class="card-header">
                         <h4 class="card-title">${card.title_ru || card.title_en || "Без названия"}</h4>
                         <div class="card-actions">
-                            <button class="btn-icon" onclick="adminApp.editCard('${card.id}')">✏️</button>
+                            <button class="btn-icon" onclick="adminApp.editCard('${card.id || ''}')" title="Редактировать">✏️</button>
+                            ${card.id ? `<button class="btn-icon" onclick="adminApp.deleteCard('${card.id}')" title="Удалить" style="color:var(--error)">🗑️</button>` : `<button class="btn-icon" onclick="adminApp.deleteNewCard(${this.cards.indexOf(card)})" title="Удалить" style="color:var(--error)">🗑️</button>`}
                         </div>
                     </div>
                     <p style="font-size:0.8rem; color:#666;">${card.type_ru || card.type_en || "Тип"}</p>
                 </div>
             `).join('');
 
-            // Block Header with Editable Title inputs (Inline for MVP simplicity)
+            // Block Header with Editable Title inputs
             blockSection.innerHTML = `
                 <div class="block-header-edit">
-                    <div class="block-inputs">
+                    <div class="block-inputs-grid">
                         <input type="text" class="input-title" value="${block.title_ru || ''}" placeholder="Заголовок (RU)" onchange="adminApp.updateBlockLocal('${block.key}', 'title_ru', this.value)">
-                         <span style="font-size:0.8rem; color:#999">(${block.key})</span>
-                         <!-- Could add EN title edit here too -->
+                        <input type="text" class="input-title" value="${block.title_en || ''}" placeholder="Title (EN)" onchange="adminApp.updateBlockLocal('${block.key}', 'title_en', this.value)">
+                        
+                        <input type="text" class="input-subtitle" value="${block.subtitle_ru || ''}" placeholder="Подзаголовок (RU)" onchange="adminApp.updateBlockLocal('${block.key}', 'subtitle_ru', this.value)">
+                        <input type="text" class="input-subtitle" value="${block.subtitle_en || ''}" placeholder="Subtitle (EN)" onchange="adminApp.updateBlockLocal('${block.key}', 'subtitle_en', this.value)">
                     </div>
-                    <h3 class="block-count">Карточек: ${cards.length}</h3>
+                     <div class="block-controls">
+                        <span class="card-count" style="margin-right:10px; color:${cards.length > 5 ? 'var(--error)' : '#64748b'}; font-size:0.9rem">
+                            ${cards.length} / 5
+                        </span>
+                        <button class="btn-sm btn-outline-primary" onclick="adminApp.addCard('${block.key}')" ${cards.length >= 5 ? 'disabled style="opacity:0.5; cursor:not-allowed"' : ''}>+ Добавить</button>
+                    </div>
                 </div>
                 
                 <div class="cards-grid">
@@ -273,6 +293,67 @@ class AdminApp {
             `;
             container.appendChild(blockSection);
         });
+    }
+
+    addCard(blockKey) {
+        // Validation: Max 5 cards
+        const count = this.cards.filter(c => c.block_key === blockKey).length;
+        if (count >= 5) {
+            this.showToast('Максимум 5 карточек в блоке!', 'error');
+            return;
+        }
+
+        // Create a new empty card template
+        const newCard = {
+            id: null, // New card
+            block_key: blockKey,
+            kind: 'venue', // default
+            title_ru: 'Новая карточка',
+            title_en: 'New Card',
+            type_ru: 'Категория',
+            type_en: 'Category',
+            desc_ru: '',
+            desc_en: '',
+            action_url: '',
+            img_dark_path: null,
+            img_light_path: null,
+            sort_order: 999
+        };
+
+        this.cards.push(newCard);
+        this.renderContent();
+        this.showToast('Новая карточка добавлена. Сохраните изменения!', 'info');
+    }
+
+    deleteCard(id) {
+        if (!confirm("Вы уверены, что хотите удалить эту карточку? Это действие нельзя отменить после сохранения.")) return;
+
+        this.cards = this.cards.filter(c => c.id !== id);
+        this.renderContent();
+        this.showToast('Карточка удалена (локально). Сохраните изменения!', 'info');
+    }
+
+    deleteNewCard(index) {
+        if (!confirm("Удалить новую (несохраненную) карточку?")) return;
+        this.cards.splice(index, 1);
+        this.renderContent();
+    }
+
+    // Helper: Toast Notification
+    showToast(message, type = 'success') {
+        let toast = document.getElementById('toast-notification');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'toast-notification';
+            document.body.appendChild(toast);
+        }
+
+        toast.className = `toast toast-${type} show`;
+        toast.textContent = message;
+
+        setTimeout(() => {
+            toast.className = toast.className.replace('show', '');
+        }, 3000);
     }
 
     updateBlockLocal(key, field, value) {
@@ -410,7 +491,7 @@ class AdminApp {
                 img_light_path: c.img_light_path
             }));
 
-            // 2. Save Blocks
+            // 2. Blocks Payload
             const blocksToSend = this.blocks.map(b => ({
                 key: b.key,
                 sort_order: b.sort_order,
@@ -420,25 +501,30 @@ class AdminApp {
                 subtitle_en: b.subtitle_en
             }));
 
-            // Parallel Save
+            // 3. Cards Payload (fix ID)
+            const cardsPayload = this.cards.map(c => ({
+                ...c,
+                id: c.id
+            }));
+
             const headers = {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${this.token}`
+                "Authorization": `Bearer ${this.token}`,
+                "Content-Type": "application/json"
             };
 
-            const [cardsRes, blocksRes] = await Promise.all([
-                fetch(`${API_URL}/admin/owners/${this.ownerId}/cards`, { method: "PUT", headers, body: JSON.stringify(cardsToSend) }),
+            await Promise.all([
+                fetch(`${API_URL}/admin/owners/${this.ownerId}/cards`, { method: "PUT", headers, body: JSON.stringify(cardsPayload) }),
                 fetch(`${API_URL}/admin/owners/${this.ownerId}/blocks`, { method: "PUT", headers, body: JSON.stringify(blocksToSend) })
             ]);
 
-            if (!cardsRes.ok || !blocksRes.ok) throw new Error("Failed to save changes (cards or blocks)");
+            this.showToast("Все изменения успешно сохранены!", "success");
 
-            alert("Все изменения успешно сохранены!");
-            this.fetchData();
+            // Reload to get fresh IDs
+            setTimeout(() => this.fetchContent(), 1000);
 
         } catch (err) {
             console.error(err);
-            alert(`Ошибка сохранения: ${err.message}`);
+            this.showToast("Ошибка сохранения: " + err.message, "error");
         } finally {
             btn.textContent = originalText;
             btn.disabled = false;

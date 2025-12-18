@@ -36,7 +36,7 @@ class CardCreate(CardBase):
     pass
 
 class CardUpdate(CardBase):
-    pass
+    id: Optional[UUID] = None
 
 class CardResponse(CardBase):
     id: UUID

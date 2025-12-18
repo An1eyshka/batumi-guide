@@ -34,27 +34,36 @@ def get_owner_cards(owner_id: uuid.UUID, db: Session = Depends(database.get_db))
 
 @router.put("/owners/{owner_id}/cards")
 def update_owner_cards(owner_id: uuid.UUID, cards: List[schemas.CardUpdate], db: Session = Depends(database.get_db)):
-    # MVP: Delete all and recreate? Or update in place?
-    # Safer: Create new or update existing.
-    # For MVP simplicity, let's assume we receive the full list of desired cards.
-    # But dealing with IDs is tricky.
+    # 1. Get existing cards to know what to update/delete
+    existing_cards = db.query(models.Card).filter(models.Card.owner_id == owner_id).all()
+    existing_map = {c.id: c for c in existing_cards}
     
-    # Let's just implement creating ONE card for now or bulk update if needed.
-    # TS says: "PUT ... save all cards (mass save)"
+    # Track IDs processed from the input list
+    processed_ids = set()
     
-    # 1. Remove existing cards for this owner (Simplest sync strategy)
-    db.query(models.Card).filter(models.Card.owner_id == owner_id).delete()
-    
-    # 2. Add new cards
-    new_cards = []
     for card_data in cards:
-        db_card = models.Card(owner_id=owner_id, **card_data.dict())
-        db.add(db_card)
-        new_cards.append(db_card)
+        # If card has an ID and it exists in DB -> Update
+        if card_data.id and card_data.id in existing_map:
+            db_card = existing_map[card_data.id]
+            # Update fields
+            for field, value in card_data.dict(exclude={'id'}).items():
+                setattr(db_card, field, value)
+            processed_ids.add(card_data.id)
+        else:
+            # Create new card
+            # (Remove id from dict if it's None to avoid issues, though Pydantic handles it)
+            new_data = card_data.dict(exclude={'id'})
+            db_card = models.Card(owner_id=owner_id, **new_data)
+            db.add(db_card)
     
+    # 3. Delete cards that were not in the input list
+    start_delete = False
+    for c in existing_cards:
+        if c.id not in processed_ids:
+            db.delete(c)
+            
     db.commit()
-    db.commit()
-    return {"status": "ok", "count": len(new_cards)}
+    return {"status": "ok"}
 
 # --- Blocks ---
 
