@@ -9,142 +9,185 @@
 </head>
 
 <body>
-
     <div id="app">
-        <!-- Вьюпорт авторизации -->
+        <!-- Viewport: Login -->
         <div id="login-view" class="view hidden">
             <div class="login-card">
-                <h2>Вход для владельца</h2>
+                <div class="login-header">
+                    <h2>Batumi Guide</h2>
+                    <p>Вход для владельца</p>
+                </div>
                 <form id="login-form">
                     <div class="form-group">
-                        <label for="slug">ID Владельца (Slug)</label>
+                        <label for="slug">ID Владельца</label>
                         <input type="text" id="slug" name="slug" placeholder="batumi-guide" required>
                     </div>
                     <div class="form-group">
                         <label for="password">Пароль</label>
                         <input type="password" id="password" name="password" required>
                     </div>
-                    <button type="submit" class="btn-primary">Войти</button>
+                    <button type="submit" class="btn-primary full-width">Войти</button>
                     <p id="login-error" class="error-msg"></p>
                 </form>
             </div>
         </div>
 
-        <!-- Вьюпорт дашборда -->
+        <!-- Viewport: Dashboard -->
         <div id="dashboard-view" class="view hidden">
-            <header class="admin-header">
-                <div class="header-left">
-                    <h1>Управление гидом</h1>
-                    <nav class="admin-tabs">
-                        <button class="tab-btn active" data-tab="content">Контент</button>
-                        <button class="tab-btn" data-tab="stats">Статистика</button>
+            <div class="app-layout">
+                <!-- Sidebar -->
+                <aside class="sidebar">
+                    <div class="sidebar-brand">
+                        <h2>Admin Panel</h2>
+                    </div>
+                    <nav class="sidebar-nav">
+                        <button class="nav-item active" data-tab="content">
+                            <span>📄</span> Контент
+                        </button>
+                        <button class="nav-item" data-tab="stats">
+                            <span>📊</span> Статистика
+                        </button>
                     </nav>
-                </div>
-                <div class="header-actions">
-                    <a href="http://127.0.0.1:5500/index.html" target="_blank" class="btn-text">Открыть сайт &nearr;</a>
-                    <button id="logout-btn" class="btn-danger">Выйти</button>
-                </div>
-            </header>
-
-            <main class="admin-content">
-                <!-- Вкладка Контент -->
-                <div id="tab-content" class="tab-pane active">
-                    <div class="content-controls">
-                        <!-- Refresh button removed as per user request -->
-                        <button id="save-all-btn" class="btn-primary" onclick="adminApp.saveAllChanges()">Сохранить все
-                            изменения</button>
+                    <div class="sidebar-footer">
+                        <a href="http://127.0.0.1:5500/index.html" target="_blank" class="nav-link-ext">
+                            Открыть сайт ↗
+                        </a>
+                        <button id="logout-btn" class="nav-item danger">
+                            <span>🚪</span> Выйти
+                        </button>
                     </div>
-                    <div id="blocks-container" class="blocks-list">
-                        <!-- Здесь будут блоки (Где поесть, и т.д.) -->
-                        <p class="loading-text">Загрузка данных...</p>
-                    </div>
-                </div>
+                </aside>
 
-                <!-- Вкладка Статистика -->
-                <div id="tab-stats" class="tab-pane hidden">
-                    <h2>Статистика кликов</h2>
-                    <p>Здесь будет таблица с популярными местами.</p>
-                </div>
-            </main>
+                <!-- Main Content -->
+                <main class="main-content">
+                    <!-- Top Bar with Save Button -->
+                    <header class="top-bar">
+                        <h1 id="page-title">Управление контентом</h1>
+                        <div class="top-actions">
+                            <button id="save-all-btn" class="btn-primary" onclick="adminApp.saveAllChanges()">
+                                💾 Сохранить изменения
+                            </button>
+                        </div>
+                    </header>
+
+                    <div class="content-wrapper">
+                        <!-- Tab: Content -->
+                        <div id="tab-content" class="tab-pane active">
+                            <div id="blocks-container" class="blocks-list">
+                                <p class="loading-text">Загрузка данных...</p>
+                            </div>
+                        </div>
+
+                        <!-- Tab: Stats -->
+                        <div id="tab-stats" class="tab-pane hidden">
+                            <!-- Stats will be rendered here -->
+                        </div>
+                    </div>
+                </main>
+            </div>
         </div>
 
-        <!-- Модальное окно редактирования -->
+        <!-- Modal: Edit Card -->
         <div id="edit-modal" class="modal hidden">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3>Редактирование карточки</h3>
+                    <h3>Редактирование</h3>
                     <button class="close-btn" onclick="adminApp.closeModal()">&times;</button>
                 </div>
                 <div class="modal-body">
                     <form id="edit-form">
                         <input type="hidden" name="id">
 
-                        <div class="form-row">
-                            <div class="form-group half">
-                                <label>Заголовок (RU)</label>
-                                <input type="text" name="title_ru">
+                        <!-- Main Info -->
+                        <div class="form-section">
+                            <label class="section-label">Основная информация</label>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Название (RU)</label>
+                                    <input type="text" name="title_ru" placeholder="Например: Pizza House">
+                                </div>
+                                <div class="form-group">
+                                    <label>Name (EN)</label>
+                                    <input type="text" name="title_en" placeholder="E.g. Pizza House">
+                                </div>
                             </div>
-                            <div class="form-group half">
-                                <label>Заголовок (EN)</label>
-                                <input type="text" name="title_en">
+
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Тип заведения</label>
+                                    <select name="kind" class="select-input">
+                                        <option value="venue">📍 Заведение (Карта)</option>
+                                        <option value="service">📞 Сервис (Контакты)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Ссылка (Action URL)</label>
+                                    <input type="text" name="action_url" placeholder="https://...">
+                                </div>
+                            </div>
+
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Категория (RU)</label>
+                                    <input type="text" name="type_ru" placeholder="Текст над тегами">
+                                </div>
+                                <div class="form-group">
+                                    <label>Category (EN)</label>
+                                    <input type="text" name="type_en" placeholder="Text above tags">
+                                </div>
                             </div>
                         </div>
 
-                        <div class="form-row">
-                            <div class="form-group half">
-                                <label>Тип (RU)</label>
-                                <input type="text" name="type_ru">
-                            </div>
-                            <div class="form-group half">
-                                <label>Тип (EN)</label>
-                                <input type="text" name="type_en">
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Ссылка (Action URL)</label>
-                            <input type="text" name="action_url">
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group half">
-                                <label>Описание (RU)</label>
-                                <textarea name="desc_ru" rows="3"></textarea>
-                            </div>
-                            <div class="form-group half">
-                                <label>Описание (EN)</label>
-                                <textarea name="desc_en" rows="3"></textarea>
+                        <!-- Description -->
+                        <div class="form-section">
+                            <label class="section-label">Описание</label>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Описание (RU)</label>
+                                    <textarea name="desc_ru" rows="3"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>Description (EN)</label>
+                                    <textarea name="desc_en" rows="3"></textarea>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label>Изображения</label>
+                        <!-- Images -->
+                        <div class="form-section">
+                            <label class="section-label">Изображения</label>
                             <div class="image-upload-row">
                                 <div class="upload-box">
-                                    <span>Dark/Default Img</span>
-                                    <input type="file" onchange="adminApp.uploadImage(this, 'dark')">
-                                    <input type="hidden" name="img_dark_path">
+                                    <span>Dark / Default</span>
                                     <div class="preview-img" id="preview-dark"></div>
+                                    <label class="file-btn">
+                                        Загрузить
+                                        <input type="file" onchange="adminApp.uploadImage(this, 'dark')">
+                                    </label>
+                                    <input type="hidden" name="img_dark_path">
                                 </div>
                                 <div class="upload-box">
-                                    <span>Light Theme Img</span>
-                                    <input type="file" onchange="adminApp.uploadImage(this, 'light')">
-                                    <input type="hidden" name="img_light_path">
+                                    <span>Light Theme</span>
                                     <div class="preview-img" id="preview-light"></div>
+                                    <label class="file-btn">
+                                        Загрузить
+                                        <input type="file" onchange="adminApp.uploadImage(this, 'light')">
+                                    </label>
+                                    <input type="hidden" name="img_light_path">
                                 </div>
                             </div>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn-secondary" onclick="adminApp.closeModal()">Отмена</button>
-                    <button class="btn-primary" onclick="adminApp.applyEdit()">Применить</button>
+                    <button class="btn-text" onclick="adminApp.closeModal()">Отмена</button>
+                    <button class="btn-primary" onclick="adminApp.applyEdit()">Сохранить</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="admin.js?v=2"></script>
+    <script src="admin.js?v=5"></script>
 </body>
 
 </html>

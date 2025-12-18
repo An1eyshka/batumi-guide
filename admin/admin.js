@@ -111,18 +111,28 @@ class AdminApp {
     }
 
     setupTabs() {
-        const tabs = document.querySelectorAll('.tab-btn');
+        const tabs = document.querySelectorAll('.nav-item[data-tab]'); // Only select those with data-tab
         tabs.forEach(btn => {
             btn.addEventListener('click', () => {
-                // Remove active
+                // Remove active from all nav items
                 tabs.forEach(t => t.classList.remove('active'));
+
+                // Hide all panes
                 document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
 
-                // Add active
+                // Set active to clicked button
                 btn.classList.add('active');
+
                 const startId = btn.getAttribute('data-tab'); // content or stats
                 const pane = document.getElementById(`tab-${startId}`);
                 if (pane) pane.classList.remove('hidden');
+
+                // Update Header Title based on tab
+                const pageTitle = document.getElementById('page-title');
+                if (pageTitle) {
+                    if (startId === 'content') pageTitle.textContent = 'Управление контентом';
+                    if (startId === 'stats') pageTitle.textContent = 'Статистика кликов';
+                }
 
                 // Fetch stats if stats tab
                 if (startId === 'stats') {
