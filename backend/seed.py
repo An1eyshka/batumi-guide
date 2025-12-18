@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from .database import SessionLocal, engine
 from . import models
+from .routers.auth import get_password_hash
 
 # Create tables if they don't exist (Quick MVP way)
 models.Base.metadata.create_all(bind=engine)
@@ -32,11 +33,22 @@ def seed():
         user = models.User(
             owner_id=owner.id,
             role="owner",
-            login="batumi-guide",
-            password_hash="admin123", # Change this on first login!
+            login=owner.slug,
+            password_hash=get_password_hash(f"{owner.slug}123"), # HASHED!
             must_change_password=True
         )
         db.add(user)
+
+        # 2. Create Super Admin User
+        admin_user = db.query(models.User).filter(models.User.login == "admin").first()
+        if not admin_user:
+            print("Creating admin user...")
+            admin_user = models.User(
+                role="superadmin",
+                login="admin",
+                password_hash=get_password_hash("admin123") # HASHED!
+            )
+            db.add(admin_user)
 
         # 2.5 Create Blocks
         blocks_data = [

@@ -95,16 +95,38 @@ def update_owner_blocks(owner_id: uuid.UUID, blocks: List[schemas.BlockUpdate], 
 # --- Uploads ---
 
 @router.post("/upload")
-async def upload_image(file: UploadFile = File(...)):
-    # 1. Validate file (size, extension)
-    # 2. Save to /img/uploads/
+async def upload_image(
+    file: UploadFile = File(...), 
+    db: Session = Depends(database.get_db)
+    # user: models.User = Depends(auth.get_current_user) # TODO: Add Auth dependency later
+):
+    # 1. Validate File Type
+    ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
+    filename = file.filename.lower()
+    ext = os.path.splitext(filename)[1]
+    
+    if ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail="Invalid file type. Only images allowed.")
+
+    if file.content_type not in ["image/jpeg", "image/png", "image/webp", "image/gif"]:
+        raise HTTPException(status_code=400, detail="Invalid content type.")
+
+    # 2. Validate Size (Read first 5MB + 1 byte)
+    MAX_FILE_SIZE = 5 * 1024 * 1024 # 5 MB
+    content = await file.read()
+    
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail="File too large. Max 5MB.")
+
+    # 3. Safe Filename
+    safe_filename = f"{uuid.uuid4()}{ext}"
     
     upload_dir = os.path.join("img", "uploads")
     os.makedirs(upload_dir, exist_ok=True)
     
-    file_path = os.path.join(upload_dir, file.filename)
+    file_path = os.path.join(upload_dir, safe_filename)
     
     with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+        buffer.write(content)
         
-    return {"url": f"img/uploads/{file.filename}"}
+    return {"url": f"img/uploads/{safe_filename}"}
