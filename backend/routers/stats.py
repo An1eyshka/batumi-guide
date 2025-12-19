@@ -1,15 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from sqlalchemy import func, desc
-from .. import database, models, schemas
-import uuid
-
-router = APIRouter(
-    prefix="/api/admin",
-    tags=["admin-stats"] 
-)
-
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func, desc
@@ -18,6 +7,18 @@ import csv
 import io
 from .. import database, models, schemas
 import uuid
+from . import auth
+
+router = APIRouter(
+    prefix="/api/admin",
+    tags=["admin-stats"] 
+)
+
+def ensure_owner_access(owner_id: uuid.UUID, user: models.User):
+    if user.role == "superadmin":
+        return
+    if not user.owner_id or str(user.owner_id) != str(owner_id):
+        raise HTTPException(status_code=403, detail="Forbidden")
 
 # ... imports ...
 
@@ -25,8 +26,10 @@ import uuid
 def get_owner_stats(
     owner_id: uuid.UUID, 
     period: str = Query("all", enum=["7d", "30d", "all"]),
-    db: Session = Depends(database.get_db)
+    db: Session = Depends(database.get_db),
+    user: models.User = Depends(auth.get_current_user)
 ):
+    ensure_owner_access(owner_id, user)
     query = db.query(models.ClickEvent).filter(models.ClickEvent.owner_id == owner_id)
     
     # Apply Time Filter
@@ -83,7 +86,12 @@ def get_owner_stats(
     )
 
 @router.get("/owners/{owner_id}/stats/export")
-def export_owner_stats(owner_id: uuid.UUID, db: Session = Depends(database.get_db)):
+def export_owner_stats(
+    owner_id: uuid.UUID,
+    db: Session = Depends(database.get_db),
+    user: models.User = Depends(auth.get_current_user)
+):
+    ensure_owner_access(owner_id, user)
     # Fetch all events (raw data for CSV)
     events = db.query(models.ClickEvent).filter(models.ClickEvent.owner_id == owner_id).order_by(models.ClickEvent.ts.desc()).all()
     

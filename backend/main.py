@@ -10,9 +10,16 @@ from . import models, database
 app = FastAPI(title="Batumi Guide API")
 
 # CORS (Allow frontend to communicate)
+# CORS (Allow frontend to communicate)
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS")
+if allowed_origins_env:
+    allowed_origins = [origin.strip() for origin in allowed_origins_env.split(",") if origin.strip()]
+else:
+    allowed_origins = ["http://127.0.0.1:5500", "http://localhost:5500"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

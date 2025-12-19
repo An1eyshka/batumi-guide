@@ -19,6 +19,27 @@ class App {
         this.init();
     }
 
+    escapeHTML(value) {
+        if (value === undefined || value === null) return "";
+        return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+    }
+
+    safeUrl(url, fallback = null) {
+        if (!url) return fallback;
+        try {
+            const parsed = new URL(url, window.location.origin);
+            if (!["http:", "https:"].includes(parsed.protocol)) return fallback;
+            return parsed.href;
+        } catch (e) {
+            return fallback;
+        }
+    }
+
     // Определяем начальный язык
     getInitialLang() {
         // 1. Проверяем адресную строку (если есть ?lang=ru)
@@ -68,7 +89,8 @@ class App {
         // Если пришлел contact_url владельца, можем его обновить в футере
         if (this.data.contact_url) {
             const footerLink = document.querySelector('.footer-link');
-            if (footerLink) footerLink.href = this.data.contact_url;
+            const safeContact = this.safeUrl(this.data.contact_url, footerLink ? footerLink.href : null);
+            if (footerLink && safeContact) footerLink.href = safeContact;
         }
     }
 
@@ -200,15 +222,17 @@ class App {
 
     // Создание HTML для одной карточки места
     createCardHTML(item) {
-        const title = this.loc(item.title);
-        const type = this.loc(item.type);
-        const tags = this.loc(item.tags);
-        const desc = this.loc(item.desc);
+        const title = this.escapeHTML(this.loc(item.title));
+        const type = this.escapeHTML(this.loc(item.type));
+        const tags = this.escapeHTML(this.loc(item.tags));
+        const desc = this.escapeHTML(this.loc(item.desc));
 
         // Определяем тип действия (button text и action_type)
         const isService = item.kind === 'service';
         const btnText = isService ? this.t('contacts') : this.t('open_map');
         const actionType = isService ? 'contacts' : 'open_on_map';
+        const safeLink = this.safeUrl(item.url, "#");
+        const safeCardId = this.escapeHTML(item.id);
 
         // Логика обработки картинок (строка или объект {dark, light})
         let darkImage = null;
@@ -218,12 +242,12 @@ class App {
         if (item.image) {
             if (typeof item.image === 'string') {
                 // Если передана просто строка — это картинка для темной темы
-                darkImage = item.image;
+                darkImage = this.safeUrl(item.image, null);
                 hasImageClass = 'has-bg-image has-dark-only';
             } else {
                 // Если передан объект — берем картинки для обеих тем
-                darkImage = item.image.dark;
-                lightImage = item.image.light;
+                darkImage = this.safeUrl(item.image.dark, null);
+                lightImage = this.safeUrl(item.image.light, null);
                 hasImageClass = 'has-bg-image';
                 if (lightImage) hasImageClass += ' has-light-bg';
             }
@@ -253,8 +277,8 @@ class App {
                         <p class="place-tags">${tags}</p>
                         <p class="place-desc">${desc}</p>
                         <div class="place-meta">
-                            <a class="place-map-btn" href="${item.url}" target="_blank" rel="noopener noreferrer"
-                               data-id="${item.id}" data-action="${actionType}">
+                            <a class="place-map-btn" href="${safeLink}" target="_blank" rel="noopener noreferrer"
+                               data-id="${safeCardId}" data-action="${actionType}">
                                ${btnText}
                             </a>
                         </div>
@@ -273,10 +297,11 @@ class App {
         this.data.blocks.forEach(block => {
             const section = document.createElement('section');
             section.className = 'category-section';
-            section.id = block.key; // id="eat", id="city" и т.д.
+            const safeBlockKey = (block.key || '').toString().replace(/[^a-z0-9_-]/gi, '');
+            section.id = safeBlockKey || 'block'; // id="eat", id="city" и т.д.
 
-            const title = this.loc(block.title);
-            const subtitle = this.loc(block.subtitle);
+            const title = this.escapeHTML(this.loc(block.title));
+            const subtitle = this.escapeHTML(this.loc(block.subtitle));
             // Создаем HTML для всех карточек в этом блоке
             const slidesHTML = block.items.map(item => this.createCardHTML(item)).join('');
 
@@ -287,7 +312,7 @@ class App {
                         <h2 class="category-title">${title}</h2>
                         <p class="category-description">${subtitle}</p>
                     </header>
-                    <div class="swiper ${block.key}-slider">
+                    <div class="swiper ${safeBlockKey}-slider">
                         <div class="swiper-wrapper">
                             ${slidesHTML}
                         </div>
@@ -296,7 +321,7 @@ class App {
                 </div>
             `;
             container.appendChild(section);
-            slidersToInit.push({ key: block.key, section });
+            slidersToInit.push({ key: safeBlockKey, section });
         });
 
         // Инициализация Swiper (слайдеров)

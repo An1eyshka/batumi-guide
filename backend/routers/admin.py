@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 from .. import database, models, schemas
+from . import auth
 from typing import List
 import uuid
 import shutil
@@ -11,15 +12,31 @@ router = APIRouter(
     tags=["admin"] # Should require auth dependency
 )
 
+def ensure_owner_access(owner_id: uuid.UUID, user: models.User):
+    if user.role == "superadmin":
+        return
+    if not user.owner_id or str(user.owner_id) != str(owner_id):
+        raise HTTPException(status_code=403, detail="Forbidden")
+
 # --- Owners ---
 
 @router.get("/owners", response_model=List[schemas.OwnerResponse])
-def get_owners(db: Session = Depends(database.get_db)):
-    # Validate SuperAdmin permission here
+def get_owners(
+    db: Session = Depends(database.get_db),
+    user: models.User = Depends(auth.get_current_user)
+):
+    if user.role != "superadmin":
+        raise HTTPException(status_code=403, detail="Forbidden")
     return db.query(models.Owner).all()
 
 @router.post("/owners", response_model=schemas.OwnerResponse)
-def create_owner(owner: schemas.OwnerCreate, db: Session = Depends(database.get_db)):
+def create_owner(
+    owner: schemas.OwnerCreate,
+    db: Session = Depends(database.get_db),
+    user: models.User = Depends(auth.get_current_user)
+):
+    if user.role != "superadmin":
+        raise HTTPException(status_code=403, detail="Forbidden")
     db_owner = models.Owner(**owner.dict())
     db.add(db_owner)
     db.commit()
@@ -29,11 +46,22 @@ def create_owner(owner: schemas.OwnerCreate, db: Session = Depends(database.get_
 # --- Cards ---
 
 @router.get("/owners/{owner_id}/cards", response_model=List[schemas.CardResponse])
-def get_owner_cards(owner_id: uuid.UUID, db: Session = Depends(database.get_db)):
+def get_owner_cards(
+    owner_id: uuid.UUID,
+    db: Session = Depends(database.get_db),
+    user: models.User = Depends(auth.get_current_user)
+):
+    ensure_owner_access(owner_id, user)
     return db.query(models.Card).filter(models.Card.owner_id == owner_id).order_by(models.Card.sort_order).all()
 
 @router.put("/owners/{owner_id}/cards")
-def update_owner_cards(owner_id: uuid.UUID, cards: List[schemas.CardUpdate], db: Session = Depends(database.get_db)):
+def update_owner_cards(
+    owner_id: uuid.UUID,
+    cards: List[schemas.CardUpdate],
+    db: Session = Depends(database.get_db),
+    user: models.User = Depends(auth.get_current_user)
+):
+    ensure_owner_access(owner_id, user)
     # 1. Get existing cards to know what to update/delete
     existing_cards = db.query(models.Card).filter(models.Card.owner_id == owner_id).all()
     existing_map = {c.id: c for c in existing_cards}
@@ -68,11 +96,22 @@ def update_owner_cards(owner_id: uuid.UUID, cards: List[schemas.CardUpdate], db:
 # --- Blocks ---
 
 @router.get("/owners/{owner_id}/blocks", response_model=List[schemas.BlockResponse])
-def get_owner_blocks(owner_id: uuid.UUID, db: Session = Depends(database.get_db)):
+def get_owner_blocks(
+    owner_id: uuid.UUID,
+    db: Session = Depends(database.get_db),
+    user: models.User = Depends(auth.get_current_user)
+):
+    ensure_owner_access(owner_id, user)
     return db.query(models.Block).filter(models.Block.owner_id == owner_id).order_by(models.Block.sort_order).all()
 
 @router.put("/owners/{owner_id}/blocks")
-def update_owner_blocks(owner_id: uuid.UUID, blocks: List[schemas.BlockUpdate], db: Session = Depends(database.get_db)):
+def update_owner_blocks(
+    owner_id: uuid.UUID,
+    blocks: List[schemas.BlockUpdate],
+    db: Session = Depends(database.get_db),
+    user: models.User = Depends(auth.get_current_user)
+):
+    ensure_owner_access(owner_id, user)
     # 1. Get existing
     existing = db.query(models.Block).filter(models.Block.owner_id == owner_id).all()
     existing_map = {b.key: b for b in existing}
@@ -97,7 +136,8 @@ def update_owner_blocks(owner_id: uuid.UUID, blocks: List[schemas.BlockUpdate], 
 @router.post("/upload")
 async def upload_image(
     file: UploadFile = File(...), 
-    db: Session = Depends(database.get_db)
+    db: Session = Depends(database.get_db),
+    user: models.User = Depends(auth.get_current_user)
     # user: models.User = Depends(auth.get_current_user) # TODO: Add Auth dependency later
 ):
     # 1. Validate File Type

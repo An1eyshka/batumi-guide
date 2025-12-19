@@ -8,12 +8,12 @@ from .. import database, models
 from pydantic import BaseModel
 from passlib.context import CryptContext
 from jose import JWTError, jwt
+import os
 
 # --- Security Config ---
-# In production, move these to environment variables!
-SECRET_KEY = "CHANGE_ME_IN_PROD_TO_A_LONG_RANDOM_STRING"
+SECRET_KEY = os.getenv("SECRET_KEY", "CHANGE_ME_IN_PROD_TO_A_LONG_RANDOM_STRING")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 43200 # 30 days
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))  # default 60 minutes
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
@@ -31,7 +31,7 @@ class LoginResponse(BaseModel):
     access_token: str
     token_type: str
     role: str
-    owner_id: str = None
+    owner_id: Optional[str] = None
 
 # --- Helper Functions ---
 
@@ -51,6 +51,28 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
+def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(database.get_db)
+):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+
+    user = db.query(models.User).filter(models.User.login == username).first()
+    if not user:
+        raise credentials_exception
+    return user
+
 # --- Routes ---
 
 @router.post("/login", response_model=LoginResponse)
@@ -58,17 +80,16 @@ def login(creds: LoginRequest, db: Session = Depends(database.get_db)):
     user = db.query(models.User).filter(models.User.login == creds.username).first()
     
     if not user:
-        # Avoid user enumeration by returning generic error, but for debug we can be specific
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username",
+            detail="Invalid credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
         
     if not verify_password(creds.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect password",
+            detail="Invalid credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
