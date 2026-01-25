@@ -254,46 +254,58 @@ class AdminApp {
         });
 
         if (this.blocks.length === 0) {
-            container.innerHTML = '<p>Нет блоков. Нужно запустить сидинг базы.</p>';
+            container.innerHTML = '<div style="text-align:center; padding:2rem; color:#6B7280;">Нет блоков. Нужно запустить сидинг базы.</div>';
             return;
         }
 
         // Render based on Blocks list (preserving order)
         this.blocks.sort((a, b) => a.sort_order - b.sort_order).forEach(block => {
-            const blockSection = document.createElement('div');
-            blockSection.className = 'block-section';
+            const blockCard = document.createElement('div');
+            blockCard.className = 'block-card';
 
             const cards = cardsByBlock[block.key] || [];
+            const isFull = cards.length >= 5;
 
-            let cardsHTML = cards.map(card => `
-                <div class="card-item">
-                    <div class="image-preview-mini" style="background-image: url('../${card.img_dark_path || ''}'); height: ${card.img_dark_path ? '60px' : '0'}; margin-bottom: 0.5rem; background-size: cover; border-radius: 4px;"></div>
-                    <div class="card-header">
-                        <h4 class="card-title">${card.title_ru || card.title_en || "Без названия"}</h4>
-                        <div class="card-actions">
+            let cardsHTML = cards.map(card => {
+                const imgStyle = card.img_dark_path ? `background-image: url('../${card.img_dark_path}')` : '';
+                const imgClass = card.img_dark_path ? 'card-img' : 'card-img empty';
+                const imgContent = card.img_dark_path ? '' : '📷';
+
+                return `
+                <div class="content-card">
+                    <div class="${imgClass}" style="${imgStyle}">${imgContent}</div>
+                    <div class="card-body">
+                        <h4 class="card-title" title="${card.title_ru || card.title_en}">${card.title_ru || card.title_en || "Без названия"}</h4>
+                        <p class="card-subtitle">${card.type_ru || card.type_en || "Тип"}</p>
+                        <div class="card-footer">
                             <button class="btn-icon" onclick="adminApp.editCard('${card.id || ''}')" title="Редактировать">✏️</button>
-                            ${card.id ? `<button class="btn-icon" onclick="adminApp.deleteCard('${card.id}')" title="Удалить" style="color:var(--error)">🗑️</button>` : `<button class="btn-icon" onclick="adminApp.deleteNewCard(${this.cards.indexOf(card)})" title="Удалить" style="color:var(--error)">🗑️</button>`}
+                            ${card.id ?
+                        `<button class="btn-icon delete" onclick="adminApp.deleteCard('${card.id}')" title="Удалить">🗑️</button>` :
+                        `<button class="btn-icon delete" onclick="adminApp.deleteNewCard(${this.cards.indexOf(card)})" title="Удалить">🗑️</button>`
+                    }
                         </div>
                     </div>
-                    <p style="font-size:0.8rem; color:#666;">${card.type_ru || card.type_en || "Тип"}</p>
                 </div>
-            `).join('');
+                `;
+            }).join('');
 
-            // Block Header with Editable Title inputs
-            blockSection.innerHTML = `
-                <div class="block-header-edit">
-                    <div class="block-inputs-grid">
-                        <input type="text" class="input-title" value="${block.title_ru || ''}" placeholder="Заголовок (RU)" onchange="adminApp.updateBlockLocal('${block.key}', 'title_ru', this.value)">
-                        <input type="text" class="input-title" value="${block.title_en || ''}" placeholder="Title (EN)" onchange="adminApp.updateBlockLocal('${block.key}', 'title_en', this.value)">
+            // Block Header with Clean Inputs
+            blockCard.innerHTML = `
+                <div class="block-header">
+                    <div class="block-titles-inputs">
+                        <input type="text" class="input-invisible input-lg" value="${block.title_ru || ''}" placeholder="Заголовок (RU)" onchange="adminApp.updateBlockLocal('${block.key}', 'title_ru', this.value)">
+                        <input type="text" class="input-invisible input-lg" value="${block.title_en || ''}" placeholder="Title (EN)" onchange="adminApp.updateBlockLocal('${block.key}', 'title_en', this.value)">
                         
-                        <input type="text" class="input-subtitle" value="${block.subtitle_ru || ''}" placeholder="Подзаголовок (RU)" onchange="adminApp.updateBlockLocal('${block.key}', 'subtitle_ru', this.value)">
-                        <input type="text" class="input-subtitle" value="${block.subtitle_en || ''}" placeholder="Subtitle (EN)" onchange="adminApp.updateBlockLocal('${block.key}', 'subtitle_en', this.value)">
+                        <input type="text" class="input-invisible input-sm" value="${block.subtitle_ru || ''}" placeholder="Подзаголовок (RU)" onchange="adminApp.updateBlockLocal('${block.key}', 'subtitle_ru', this.value)">
+                        <input type="text" class="input-invisible input-sm" value="${block.subtitle_en || ''}" placeholder="Subtitle (EN)" onchange="adminApp.updateBlockLocal('${block.key}', 'subtitle_en', this.value)">
                     </div>
                      <div class="block-controls">
-                        <span class="card-count" style="margin-right:10px; color:${cards.length > 5 ? 'var(--error)' : '#64748b'}; font-size:0.9rem">
+                        <span class="count-badge ${isFull ? 'max' : ''}">
                             ${cards.length} / 5
                         </span>
-                        <button class="btn-sm btn-outline-primary" onclick="adminApp.addCard('${block.key}')" ${cards.length >= 5 ? 'disabled style="opacity:0.5; cursor:not-allowed"' : ''}>+ Добавить</button>
+                        <button class="btn-primary" style="font-size:0.85rem; padding: 0.4rem 0.8rem;" onclick="adminApp.addCard('${block.key}')" ${isFull ? 'disabled style="opacity:0.5; cursor:not-allowed; background:#9CA3AF;"' : ''}>
+                            + Добавить
+                        </button>
                     </div>
                 </div>
                 
@@ -301,7 +313,7 @@ class AdminApp {
                     ${cardsHTML}
                 </div>
             `;
-            container.appendChild(blockSection);
+            container.appendChild(blockCard);
         });
     }
 
