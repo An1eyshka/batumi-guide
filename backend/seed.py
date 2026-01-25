@@ -46,6 +46,7 @@ def seed():
             admin_user = models.User(
                 role="superadmin",
                 login="admin",
+                owner_id=owner.id, # Link to Batumi Guide for MVP editing
                 password_hash=get_password_hash("admin123") # HASHED!
             )
             db.add(admin_user)

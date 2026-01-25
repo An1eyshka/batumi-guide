@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+import os
 from .routers import public, auth, admin, events, stats
 from . import models, database
 
@@ -9,7 +10,6 @@ from . import models, database
 
 app = FastAPI(title="Batumi Guide API")
 
-# CORS (Allow frontend to communicate)
 # CORS (Allow frontend to communicate)
 allowed_origins_env = os.getenv("ALLOWED_ORIGINS")
 if allowed_origins_env:
@@ -35,7 +35,7 @@ app.include_router(stats.router)
 # Mount static files (images)
 # Assuming 'uploads' folder calls specific path or just mapping root 'img' for now if using existing images
 # For MVP, let's map the existing 'img' folder to serve static files
-import os
+
 # Mount static files (images)
 img_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "img")
 if os.path.exists(img_path):
