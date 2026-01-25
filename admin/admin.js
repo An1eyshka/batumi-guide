@@ -405,6 +405,10 @@ class AdminApp {
             this.cards = await cardsRes.json();
             this.blocks = await blocksRes.json();
 
+            // Initialize dirty tracking
+            this.cards.forEach(c => c._dirty = new Set());
+            this.blocks.forEach(b => b._dirty = new Set());
+
             this.renderContent();
 
         } catch (err) {
@@ -519,7 +523,8 @@ class AdminApp {
             action_url: '',
             img_dark_path: null,
             img_light_path: null,
-            sort_order: 999
+            sort_order: 999,
+            _dirty: new Set() // Track changes
         };
 
         this.cards.push(newCard);
@@ -558,7 +563,11 @@ class AdminApp {
     updateBlockLocal(key, field, value) {
         const blk = this.blocks.find(b => b.key === key);
         if (blk) {
-            blk[field] = value;
+            if (blk[field] !== value) {
+                blk[field] = value;
+                if (!blk._dirty) blk._dirty = new Set();
+                blk._dirty.add(field);
+            }
         }
     }
 
@@ -596,8 +605,8 @@ class AdminApp {
 
         if (cardIndex === -1) return;
 
-        const updatedCard = {
-            ...this.cards[cardIndex],
+        const currentCard = this.cards[cardIndex];
+        const updatedFields = {
             title_ru: form.title_ru.value,
             title_en: form.title_en.value,
             type_ru: form.type_ru.value,
@@ -610,7 +619,15 @@ class AdminApp {
             kind: form.kind.value
         };
 
-        this.cards[cardIndex] = updatedCard;
+        // Track dirty fields
+        if (!currentCard._dirty) currentCard._dirty = new Set();
+
+        for (const [key, val] of Object.entries(updatedFields)) {
+            if (currentCard[key] !== val) {
+                currentCard._dirty.add(key);
+                currentCard[key] = val; // Apply the change
+            }
+        }
 
         this.renderContent();
         this.closeModal();
@@ -712,6 +729,10 @@ class AdminApp {
                 fetch(`${API_URL}/admin/owners/${this.ownerId}/blocks`, { method: "PUT", headers, body: JSON.stringify(blocksToSend) })
             ]);
 
+            // Clear dirty flags on success
+            this.cards.forEach(c => c._dirty = new Set());
+            this.blocks.forEach(b => b._dirty = new Set());
+
             this.showToast(t.msg_saved, "success");
 
             // Reload to get fresh IDs
@@ -731,45 +752,55 @@ class AdminApp {
     async autoTranslateCards() {
         let tasks = [];
 
+        // Helper: Is dirty?
+        const isDirty = (obj, field) => obj._dirty && obj._dirty.has(field);
+
         // 1. Blocks
         this.blocks.forEach(block => {
-            // RU -> EN
-            if (block.title_ru && !block.title_en) {
+            // Smart RU -> EN: RU is dirty AND EN is NOT dirty (or vice versa is not pending)
+            // If both dirty -> manual override -> skip
+            // If RU dirty, EN clean -> update EN
+            if (isDirty(block, 'title_ru') && !isDirty(block, 'title_en')) {
                 tasks.push(this.translateField(block.title_ru, 'en').then(res => block.title_en = res));
-            }
-            if (block.subtitle_ru && !block.subtitle_en) {
-                tasks.push(this.translateField(block.subtitle_ru, 'en').then(res => block.subtitle_en = res));
-            }
-            // EN -> RU
-            if (block.title_en && !block.title_ru) {
+            } else if (isDirty(block, 'title_en') && !isDirty(block, 'title_ru')) {
+                // Smart EN -> RU
                 tasks.push(this.translateField(block.title_en, 'ru').then(res => block.title_ru = res));
             }
-            if (block.subtitle_en && !block.subtitle_ru) {
+
+            if (isDirty(block, 'subtitle_ru') && !isDirty(block, 'subtitle_en')) {
+                tasks.push(this.translateField(block.subtitle_ru, 'en').then(res => block.subtitle_en = res));
+            } else if (isDirty(block, 'subtitle_en') && !isDirty(block, 'subtitle_ru')) {
                 tasks.push(this.translateField(block.subtitle_en, 'ru').then(res => block.subtitle_ru = res));
             }
+
+            // Fallback for empty fields (legacy/imported data without dirty flags)
+            // Only if NOT dirty at all (fresh load), we can still auto-fill empty ones? 
+            // The user said: "regardless of whether empty or not". 
+            // The dirty flag covers "modified". What if I just loaded and one is empty?
+            // If I loaded it, dirty is empty. If I don't touch it, it won't translate. 
+            // This is safer. User must touch to trigger translation.
         });
 
         // 2. Cards
         this.cards.forEach(card => {
-            // RU -> EN
-            if (card.title_ru && !card.title_en) {
+            // Title
+            if (isDirty(card, 'title_ru') && !isDirty(card, 'title_en')) {
                 tasks.push(this.translateField(card.title_ru, 'en').then(res => card.title_en = res));
-            }
-            if (card.type_ru && !card.type_en) {
-                tasks.push(this.translateField(card.type_ru, 'en').then(res => card.type_en = res));
-            }
-            if (card.desc_ru && !card.desc_en) {
-                tasks.push(this.translateField(card.desc_ru, 'en').then(res => card.desc_en = res));
-            }
-
-            // EN -> RU
-            if (card.title_en && !card.title_ru) {
+            } else if (isDirty(card, 'title_en') && !isDirty(card, 'title_ru')) {
                 tasks.push(this.translateField(card.title_en, 'ru').then(res => card.title_ru = res));
             }
-            if (card.type_en && !card.type_ru) {
+
+            // Category
+            if (isDirty(card, 'type_ru') && !isDirty(card, 'type_en')) {
+                tasks.push(this.translateField(card.type_ru, 'en').then(res => card.type_en = res));
+            } else if (isDirty(card, 'type_en') && !isDirty(card, 'type_ru')) {
                 tasks.push(this.translateField(card.type_en, 'ru').then(res => card.type_ru = res));
             }
-            if (card.desc_en && !card.desc_ru) {
+
+            // Description
+            if (isDirty(card, 'desc_ru') && !isDirty(card, 'desc_en')) {
+                tasks.push(this.translateField(card.desc_ru, 'en').then(res => card.desc_en = res));
+            } else if (isDirty(card, 'desc_en') && !isDirty(card, 'desc_ru')) {
                 tasks.push(this.translateField(card.desc_en, 'ru').then(res => card.desc_ru = res));
             }
         });
