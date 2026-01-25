@@ -117,19 +117,6 @@ const TRANSLATIONS = {
 };
 
 class AdminApp {
-    // ... existing constructor & init ...
-
-    // ... existing showInfoModal and closeInfoModal methods if any ...
-
-    showInfoModal() {
-        document.getElementById('info-modal').classList.remove('hidden');
-    }
-
-    closeInfoModal() {
-        document.getElementById('info-modal').classList.add('hidden');
-    }
-
-    // ... rest of the class ...
     constructor() {
         this.token = localStorage.getItem("access_token");
         this.ownerId = localStorage.getItem("owner_id");
@@ -303,6 +290,14 @@ class AdminApp {
         });
     }
 
+    showInfoModal() {
+        document.getElementById('info-modal').classList.remove('hidden');
+    }
+
+    closeInfoModal() {
+        document.getElementById('info-modal').classList.add('hidden');
+    }
+
 
     // --- Stats ---
 
@@ -423,8 +418,16 @@ class AdminApp {
 
         const t = TRANSLATIONS[this.uiLang];
 
+        // Enable Container-Level DnD
+        // Prevent adding multiple listeners by checking if we already initialized
+        if (!container.dataset.dndInit) {
+            container.addEventListener('dragover', (e) => this.dragContainerOver(e));
+            container.dataset.dndInit = "true";
+        }
+
         container.innerHTML = '';
 
+        // Group cards
         const cardsByBlock = {};
         this.cards.forEach(card => {
             if (!cardsByBlock[card.block_key]) cardsByBlock[card.block_key] = [];
@@ -434,18 +437,25 @@ class AdminApp {
         if (this.blocks.length === 0) {
             container.innerHTML = `<div style="text-align:center; padding:2rem; color:#6B7280;">${t.no_blocks}</div>`;
         }
+
         // Render based on Blocks list (preserving order)
         this.blocks.sort((a, b) => a.sort_order - b.sort_order).forEach((block, index) => {
             const blockCard = document.createElement('div');
             blockCard.className = 'block-card';
             blockCard.setAttribute('draggable', 'true');
-            blockCard.setAttribute('data-index', index);
+            blockCard.setAttribute('data-block-key', block.key); // Store key for sync
 
-            // DnD Events
-            blockCard.addEventListener('dragstart', (e) => this.dragBlockStart(e, index));
-            blockCard.addEventListener('dragover', (e) => this.dragBlockOver(e));
-            blockCard.addEventListener('drop', (e) => this.dropBlock(e, index));
-            blockCard.addEventListener('dragend', (e) => this.dragBlockEnd(e));
+            // Item-Level DnD Events (Start/End only)
+            blockCard.addEventListener('dragstart', (e) => {
+                e.target.classList.add('dragging');
+                this.draggedBlock = e.target; // Store reference
+            });
+
+            blockCard.addEventListener('dragend', (e) => {
+                e.target.classList.remove('dragging');
+                this.draggedBlock = null;
+                this.syncBlockOrder(); // Sync state on drop
+            });
 
             const cards = cardsByBlock[block.key] || [];
             const isFull = cards.length >= 5;
@@ -490,11 +500,8 @@ class AdminApp {
             blockCard.innerHTML = `
                 <div class="block-header" style="cursor: grab;">
                     <div class="block-titles-inputs">
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <span style="font-size:1.2rem; color:var(--text-secondary); opacity:0.5;">☰</span>
-                            <input type="text" class="input-invisible input-lg" value="${titleValue}" placeholder="${titlePlaceholder}" onchange="adminApp.updateBlockLocal('${block.key}', '${titleField}', this.value)">
-                        </div>
-                        <input type="text" class="input-invisible input-sm" value="${subValue}" style="margin-left: 28px;" placeholder="${subPlaceholder}" onchange="adminApp.updateBlockLocal('${block.key}', '${subField}', this.value)">
+                        <input type="text" class="input-invisible input-lg" value="${titleValue}" placeholder="${titlePlaceholder}" onchange="adminApp.updateBlockLocal('${block.key}', '${titleField}', this.value)">
+                        <input type="text" class="input-invisible input-sm" value="${subValue}" placeholder="${subPlaceholder}" onchange="adminApp.updateBlockLocal('${block.key}', '${subField}', this.value)">
                     </div>
                      <div class="block-controls">
                         <span class="count-badge ${isFull ? 'max' : ''}">
@@ -514,55 +521,65 @@ class AdminApp {
         });
     }
 
-    // --- Drag & Drop Logic ---
-    dragBlockStart(e, index) {
-        this.dragSourceIndex = index;
-        e.target.classList.add('dragging');
-        e.dataTransfer.effectAllowed = 'move';
-        // e.dataTransfer.setData('text/html', e.target.innerHTML); // Required for Firefox sometimes
-    }
+    // --- Enhanced Drag & Drop Logic ---
 
-    dragBlockOver(e) {
-        if (e.preventDefault) {
-            e.preventDefault(); // Necessary. Allows us to drop.
+    dragContainerOver(e) {
+        e.preventDefault(); // Allow drop
+        const container = document.getElementById('blocks-container');
+        const afterElement = this.getDragAfterElement(container, e.clientY);
+        const draggable = document.querySelector('.dragging');
+
+        if (!draggable) return;
+
+        if (afterElement == null) {
+            container.appendChild(draggable);
+        } else {
+            container.insertBefore(draggable, afterElement);
         }
-        e.dataTransfer.dropEffect = 'move';
-        return false;
     }
 
-    dropBlock(e, targetIndex) {
-        e.stopPropagation(); // stops the browser from redirecting.
+    getDragAfterElement(container, y) {
+        // Query all draggable elements EXCEPT the one currently dragging
+        const draggableElements = [...container.querySelectorAll('.block-card:not(.dragging)')];
 
-        if (this.dragSourceIndex !== targetIndex) {
-            const movedItem = this.blocks[this.dragSourceIndex];
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            // Calculate offset: dist from cursor to vertical center of child
+            const offset = y - box.top - box.height / 2;
 
-            // Remove from old pos
-            this.blocks.splice(this.dragSourceIndex, 1);
-            // Insert at new pos
-            this.blocks.splice(targetIndex, 0, movedItem);
-
-            // Update sort_order for ALL blocks to match new array order
-            this.blocks.forEach((block, idx) => {
-                block.sort_order = idx;
-
-                // Mark as dirty if order changed? 
-                // Technically saveAllChanges sends the array logic. 
-                // But we should ensure dirty set exists if we tracked per-field.
-                // For sort_order, simpler is just trusting the save payload which maps current array order.
-            });
-
-            this.renderContent();
-            this.showToast("Block order updated", "info");
-        }
-        return false;
+            // We want the element where we are ABOVE its center (negative offset)
+            // But closest to 0 (the largest negative number)
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
 
-    dragBlockEnd(e) {
-        e.target.classList.remove('dragging');
-        document.querySelectorAll('.block-card').forEach(card => card.classList.remove('dragging'));
+    syncBlockOrder() {
+        const container = document.getElementById('blocks-container');
+        const newOrderKeys = [...container.querySelectorAll('.block-card')].map(el => el.getAttribute('data-block-key'));
+
+        // Reorder this.blocks to match DOM
+        // Create a map for fast lookup
+        const blockMap = new Map(this.blocks.map(b => [b.key, b]));
+
+        // Rebuild array
+        const newBlocks = newOrderKeys.map((key, index) => {
+            const block = blockMap.get(key);
+            if (block) {
+                block.sort_order = index; // Update sort index
+            }
+            return block;
+        }).filter(b => b); // Safety filter
+
+        this.blocks = newBlocks;
+        this.showToast("Block order updated locally", "info");
     }
 
     addCard(blockKey) {
+        // ... count check ...
         const count = this.cards.filter(c => c.block_key === blockKey).length;
         const t = TRANSLATIONS[this.uiLang];
 
