@@ -433,21 +433,30 @@ class AdminApp {
 
         if (this.blocks.length === 0) {
             container.innerHTML = `<div style="text-align:center; padding:2rem; color:#6B7280;">${t.no_blocks}</div>`;
-            return;
         }
-
-        this.blocks.sort((a, b) => a.sort_order - b.sort_order).forEach(block => {
+        // Render based on Blocks list (preserving order)
+        this.blocks.sort((a, b) => a.sort_order - b.sort_order).forEach((block, index) => {
             const blockCard = document.createElement('div');
             blockCard.className = 'block-card';
+            blockCard.setAttribute('draggable', 'true');
+            blockCard.setAttribute('data-index', index);
+
+            // DnD Events
+            blockCard.addEventListener('dragstart', (e) => this.dragBlockStart(e, index));
+            blockCard.addEventListener('dragover', (e) => this.dragBlockOver(e));
+            blockCard.addEventListener('drop', (e) => this.dropBlock(e, index));
+            blockCard.addEventListener('dragend', (e) => this.dragBlockEnd(e));
 
             const cards = cardsByBlock[block.key] || [];
             const isFull = cards.length >= 5;
 
+            // Render Cards (Show relevant language)
             let cardsHTML = cards.map(card => {
                 const imgStyle = card.img_dark_path ? `background-image: url('../${card.img_dark_path}')` : '';
                 const imgClass = card.img_dark_path ? 'card-img' : 'card-img empty';
                 const imgContent = card.img_dark_path ? '' : '📷';
 
+                // Choose text based on Global Lang Toggle
                 const title = this.uiLang === 'ru' ? (card.title_ru || card.title_en) : (card.title_en || card.title_ru);
                 const subtitle = this.uiLang === 'ru' ? (card.type_ru || card.type_en) : (card.type_en || card.type_ru);
                 const titlePlaceholder = t.card_untitled;
@@ -470,6 +479,7 @@ class AdminApp {
                 `;
             }).join('');
 
+            // Block Header with Clean Inputs based on Language
             const titleValue = this.uiLang === 'ru' ? (block.title_ru || '') : (block.title_en || '');
             const subValue = this.uiLang === 'ru' ? (block.subtitle_ru || '') : (block.subtitle_en || '');
             const titleField = this.uiLang === 'ru' ? 'title_ru' : 'title_en';
@@ -478,10 +488,13 @@ class AdminApp {
             const subPlaceholder = t.block_subtitle_placeholder;
 
             blockCard.innerHTML = `
-                <div class="block-header">
+                <div class="block-header" style="cursor: grab;">
                     <div class="block-titles-inputs">
-                        <input type="text" class="input-invisible input-lg" value="${titleValue}" placeholder="${titlePlaceholder}" onchange="adminApp.updateBlockLocal('${block.key}', '${titleField}', this.value)">
-                        <input type="text" class="input-invisible input-sm" value="${subValue}" placeholder="${subPlaceholder}" onchange="adminApp.updateBlockLocal('${block.key}', '${subField}', this.value)">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:1.2rem; color:var(--text-secondary); opacity:0.5;">☰</span>
+                            <input type="text" class="input-invisible input-lg" value="${titleValue}" placeholder="${titlePlaceholder}" onchange="adminApp.updateBlockLocal('${block.key}', '${titleField}', this.value)">
+                        </div>
+                        <input type="text" class="input-invisible input-sm" value="${subValue}" style="margin-left: 28px;" placeholder="${subPlaceholder}" onchange="adminApp.updateBlockLocal('${block.key}', '${subField}', this.value)">
                     </div>
                      <div class="block-controls">
                         <span class="count-badge ${isFull ? 'max' : ''}">
@@ -499,6 +512,54 @@ class AdminApp {
             `;
             container.appendChild(blockCard);
         });
+    }
+
+    // --- Drag & Drop Logic ---
+    dragBlockStart(e, index) {
+        this.dragSourceIndex = index;
+        e.target.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        // e.dataTransfer.setData('text/html', e.target.innerHTML); // Required for Firefox sometimes
+    }
+
+    dragBlockOver(e) {
+        if (e.preventDefault) {
+            e.preventDefault(); // Necessary. Allows us to drop.
+        }
+        e.dataTransfer.dropEffect = 'move';
+        return false;
+    }
+
+    dropBlock(e, targetIndex) {
+        e.stopPropagation(); // stops the browser from redirecting.
+
+        if (this.dragSourceIndex !== targetIndex) {
+            const movedItem = this.blocks[this.dragSourceIndex];
+
+            // Remove from old pos
+            this.blocks.splice(this.dragSourceIndex, 1);
+            // Insert at new pos
+            this.blocks.splice(targetIndex, 0, movedItem);
+
+            // Update sort_order for ALL blocks to match new array order
+            this.blocks.forEach((block, idx) => {
+                block.sort_order = idx;
+
+                // Mark as dirty if order changed? 
+                // Technically saveAllChanges sends the array logic. 
+                // But we should ensure dirty set exists if we tracked per-field.
+                // For sort_order, simpler is just trusting the save payload which maps current array order.
+            });
+
+            this.renderContent();
+            this.showToast("Block order updated", "info");
+        }
+        return false;
+    }
+
+    dragBlockEnd(e) {
+        e.target.classList.remove('dragging');
+        document.querySelectorAll('.block-card').forEach(card => card.classList.remove('dragging'));
     }
 
     addCard(blockKey) {

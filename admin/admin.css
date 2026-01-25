@@ -720,3 +720,18 @@ select:focus {
     color: var(--primary);
     border-bottom-color: var(--primary);
 }
+
+/* Drag & Drop */
+.block-card.dragging {
+    opacity: 0.5;
+    background: #F3F4F6;
+    border: 2px dashed var(--primary);
+}
+
+.block-header {
+    transition: background 0.2s;
+}
+
+.block-header:hover {
+    background: #F1F5F9;
+}
