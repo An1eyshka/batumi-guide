@@ -6,6 +6,8 @@ from typing import List
 import uuid
 import shutil
 import os
+from deep_translator import GoogleTranslator
+from pydantic import BaseModel
 
 router = APIRouter(
     prefix="/api/admin",
@@ -163,6 +165,29 @@ async def upload_image(
     
     upload_dir = os.path.join("img", "uploads")
     os.makedirs(upload_dir, exist_ok=True)
+    # 1. Validate File Type
+    ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
+    filename = file.filename.lower()
+    ext = os.path.splitext(filename)[1]
+    
+    if ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail="Invalid file type. Only images allowed.")
+
+    if file.content_type not in ["image/jpeg", "image/png", "image/webp", "image/gif"]:
+        raise HTTPException(status_code=400, detail="Invalid content type.")
+
+    # 2. Validate Size (Read first 5MB + 1 byte)
+    MAX_FILE_SIZE = 5 * 1024 * 1024 # 5 MB
+    content = await file.read()
+    
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail="File too large. Max 5MB.")
+
+    # 3. Safe Filename
+    safe_filename = f"{uuid.uuid4()}{ext}"
+    
+    upload_dir = os.path.join("img", "uploads")
+    os.makedirs(upload_dir, exist_ok=True)
     
     file_path = os.path.join(upload_dir, safe_filename)
     
@@ -170,3 +195,25 @@ async def upload_image(
         buffer.write(content)
         
     return {"url": f"img/uploads/{safe_filename}"}
+
+# --- Translation ---
+
+class TranslationRequest(BaseModel):
+    text: str
+    target_lang: str = "en"
+
+@router.post("/translate")
+def translate_text(
+    req: TranslationRequest,
+    user: models.User = Depends(auth.get_current_user)
+):
+    if not req.text:
+        return {"translated_text": ""}
+    
+    try:
+        # Source 'auto' detection, target usually 'en'
+        translated = GoogleTranslator(source='auto', target=req.target_lang).translate(req.text)
+        return {"translated_text": translated}
+    except Exception as e:
+        print(f"Translation error: {e}")
+        return {"translated_text": req.text} # Fallback to original

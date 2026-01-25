@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Batumi Guide - Admin</title>
-    <link rel="stylesheet" href="admin.css?v=10">
+    <link rel="stylesheet" href="admin.css?v=11">
 </head>
 
 <body>
@@ -15,19 +15,19 @@
             <div class="login-card">
                 <div class="login-header">
                     <h2>Batumi Guide</h2>
-                    <p>Panel Access</p>
+                    <p data-i18n="login_subtitle">Panel Access</p>
                 </div>
                 <form id="login-form">
                     <div class="form-group">
-                        <label for="slug">Owner ID</label>
+                        <label for="slug" data-i18n="login_owner_id">Owner ID</label>
                         <input type="text" id="slug" name="slug" placeholder="e.g. batumi-guide" required>
                     </div>
                     <div class="form-group">
-                        <label for="password">Password</label>
+                        <label for="password" data-i18n="login_password">Password</label>
                         <input type="password" id="password" name="password" required>
                     </div>
-                    <button type="submit" class="btn-primary" style="width:100%; justify-content: center;">Sign
-                        In</button>
+                    <button type="submit" class="btn-primary" style="width:100%; justify-content: center;"
+                        data-i18n="login_btn">Sign In</button>
                     <p id="login-error" style="color:var(--danger); margin-top:1rem; font-size:0.9rem;"></p>
                 </form>
             </div>
@@ -43,18 +43,18 @@
                     </div>
                     <nav class="sidebar-nav">
                         <button class="nav-item active" data-tab="content">
-                            <span>📄</span> Content
+                            <span>📄</span> <span data-i18n="nav_content">Content</span>
                         </button>
                         <button class="nav-item" data-tab="stats">
-                            <span>📊</span> Analytics
+                            <span>📊</span> <span data-i18n="nav_analytics">Analytics</span>
                         </button>
                     </nav>
                     <div class="sidebar-footer">
                         <a href="http://127.0.0.1:5500/index.html" target="_blank" class="nav-link-ext">
-                            Open Website <span style="font-size:1.2em;">↗</span>
+                            <span data-i18n="nav_open_site">Open Website</span> <span style="font-size:1.2em;">↗</span>
                         </a>
                         <button id="logout-btn" class="nav-item danger">
-                            <span>🚪</span> Logout
+                            <span>🚪</span> <span data-i18n="nav_logout">Logout</span>
                         </button>
                     </div>
                 </aside>
@@ -63,10 +63,17 @@
                 <main class="main-content">
                     <!-- Top Bar with Save Button -->
                     <header class="top-bar">
-                        <h1 id="page-title">Content Manager</h1>
+                        <h1 id="page-title" data-i18n="page_title_content">Content Manager</h1>
                         <div class="top-actions">
+                            <span class="info-hint" onclick="adminApp.showInfoModal()" data-i18n="auto_translate_hint">✨
+                                Auto-translate on Save</span>
+                            <div class="lang-toggle">
+                                <button class="lang-btn active" onclick="adminApp.setLang('ru')">RU</button>
+                                <button class="lang-btn" onclick="adminApp.setLang('en')">EN</button>
+                            </div>
+                            <div class="divider-v"></div>
                             <button id="save-all-btn" class="btn-primary" onclick="adminApp.saveAllChanges()">
-                                <span>💾</span> Save Changes
+                                <span>💾</span> <span data-i18n="save_btn">Save Changes</span>
                             </button>
                         </div>
                     </header>
@@ -75,7 +82,7 @@
                         <!-- Tab: Content -->
                         <div id="tab-content" class="tab-pane active">
                             <div id="blocks-container" class="blocks-list">
-                                <p style="color:var(--text-secondary);">Loading content...</p>
+                                <p style="color:var(--text-secondary);" data-i18n="loading">Loading content...</p>
                             </div>
                         </div>
 
@@ -92,7 +99,7 @@
         <div id="edit-modal" class="modal hidden">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3>Edit Card</h3>
+                    <h3 data-i18n="modal_edit_title">Edit Card</h3>
                     <button class="btn-icon" onclick="adminApp.closeModal()" style="font-size:1.5rem;">&times;</button>
                 </div>
                 <div class="modal-body">
@@ -100,75 +107,75 @@
                         <input type="hidden" name="id">
 
                         <!-- Main Info -->
-                        <h4 class="form-section-title">General Info</h4>
+                        <h4 class="form-section-title" data-i18n="modal_sect_general">General Info</h4>
                         <div class="form-row">
                             <div class="form-group">
-                                <label>Title (RU)</label>
+                                <label data-i18n="label_title_ru">Title (RU)</label>
                                 <input type="text" name="title_ru" placeholder="Название места">
                             </div>
                             <div class="form-group">
-                                <label>Title (EN)</label>
+                                <label data-i18n="label_title_en">Title (EN)</label>
                                 <input type="text" name="title_en" placeholder="Place Name">
                             </div>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
-                                <label>Category (RU)</label>
+                                <label data-i18n="label_cat_ru">Category (RU)</label>
                                 <input type="text" name="type_ru" placeholder="Текст категории">
                             </div>
                             <div class="form-group">
-                                <label>Category (EN)</label>
+                                <label data-i18n="label_cat_en">Category (EN)</label>
                                 <input type="text" name="type_en" placeholder="Category text">
                             </div>
                         </div>
 
-                        <h4 class="form-section-title">Action & Link</h4>
+                        <h4 class="form-section-title" data-i18n="modal_sect_action">Action & Link</h4>
                         <div class="form-row">
                             <div class="form-group">
-                                <label>Kind</label>
+                                <label data-i18n="label_kind">Kind</label>
                                 <select name="kind">
-                                    <option value="venue">📍 Venue (Map)</option>
-                                    <option value="service">📞 Service (Contact)</option>
+                                    <option value="venue" data-i18n="opt_venue">📍 Venue (Map)</option>
+                                    <option value="service" data-i18n="opt_service">📞 Service (Contact)</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label>Action URL</label>
+                                <label data-i18n="label_action_url">Action URL</label>
                                 <input type="text" name="action_url" placeholder="https://maps.google.com/...">
                             </div>
                         </div>
 
-                        <h4 class="form-section-title">Description</h4>
+                        <h4 class="form-section-title" data-i18n="modal_sect_desc">Description</h4>
                         <div class="form-row">
                             <div class="form-group">
-                                <label>Description (RU)</label>
+                                <label data-i18n="label_desc_ru">Description (RU)</label>
                                 <textarea name="desc_ru" rows="3"></textarea>
                             </div>
                             <div class="form-group">
-                                <label>Description (EN)</label>
+                                <label data-i18n="label_desc_en">Description (EN)</label>
                                 <textarea name="desc_en" rows="3"></textarea>
                             </div>
                         </div>
 
                         <!-- Images -->
-                        <h4 class="form-section-title">Visuals</h4>
+                        <h4 class="form-section-title" data-i18n="modal_sect_visuals">Visuals</h4>
                         <div class="upload-row">
                             <div class="upload-box">
-                                <label class="upload-label">Dark / Default</label>
+                                <label class="upload-label" data-i18n="label_img_dark">Dark / Default</label>
                                 <div class="upload-preview" id="preview-dark"></div>
                                 <label class="btn-secondary"
                                     style="font-size:0.8rem; padding:0.4rem 0.8rem; display:inline-block;">
-                                    Upload Image
+                                    <span data-i18n="btn_upload">Upload Image</span>
                                     <input type="file" class="file-input" onchange="adminApp.uploadImage(this, 'dark')">
                                 </label>
                                 <input type="hidden" name="img_dark_path">
                             </div>
                             <div class="upload-box">
-                                <label class="upload-label">Light Theme</label>
+                                <label class="upload-label" data-i18n="label_img_light">Light Theme</label>
                                 <div class="upload-preview" id="preview-light"></div>
                                 <label class="btn-secondary"
                                     style="font-size:0.8rem; padding:0.4rem 0.8rem; display:inline-block;">
-                                    Upload Image
+                                    <span data-i18n="btn_upload">Upload Image</span>
                                     <input type="file" class="file-input"
                                         onchange="adminApp.uploadImage(this, 'light')">
                                 </label>
@@ -178,14 +185,35 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn-secondary" onclick="adminApp.closeModal()">Cancel</button>
-                    <button class="btn-primary" onclick="adminApp.applyEdit()">Save Changes</button>
+                    <button class="btn-secondary" onclick="adminApp.closeModal()" data-i18n="btn_cancel">Cancel</button>
+                    <button class="btn-primary" onclick="adminApp.applyEdit()" data-i18n="btn_save_modal">Save
+                        Changes</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Info -->
+        <div id="info-modal" class="modal hidden">
+            <div class="modal-content" style="width:500px">
+                <div class="modal-header">
+                    <h3 data-i18n="modal_info_title">How Auto-Translate Works</h3>
+                    <button class="btn-icon" onclick="adminApp.closeInfoModal()"
+                        style="font-size:1.5rem;">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p data-i18n="modal_info_desc_1">Fill in translations...</p>
+                    <p data-i18n="modal_info_desc_2">Leave English fields empty.</p>
+                    <p data-i18n="modal_info_desc_3">Translation happens on save.</p>
+                    <p data-i18n="modal_info_desc_4">Manual edits are preserved.</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-primary" onclick="adminApp.closeInfoModal()" data-i18n="btn_ok">OK</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="admin.js?v=20"></script>
+    <script src="admin.js?v=21"></script>
 </body>
 
 </html>
