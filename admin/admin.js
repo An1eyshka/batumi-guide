@@ -153,6 +153,34 @@ class AdminApp {
         if (logoutBtn) {
             logoutBtn.addEventListener("click", () => this.logout());
         }
+
+        this.setupActionKindUI();
+    }
+
+
+    setupActionKindUI() {
+        const form = document.getElementById('edit-form');
+        const kindSelect = form.kind;
+        const urlInput = form.action_url;
+        const hintEl = document.getElementById('action-url-hint');
+
+        if (kindSelect && urlInput) {
+            const updateUI = () => {
+                if (kindSelect.value === 'venue') {
+                    // Venue -> Google Maps
+                    urlInput.placeholder = "https://maps.google.com/...";
+                    if (hintEl) hintEl.textContent = "Ссылка на Google Maps";
+                } else if (kindSelect.value === 'service') {
+                    // Service -> Social link
+                    urlInput.placeholder = "https://instagram.com/...";
+                    if (hintEl) hintEl.textContent = "Ссылка на соц. сеть";
+                }
+            };
+
+            kindSelect.addEventListener('change', updateUI);
+            // Run once on init
+            updateUI();
+        }
     }
 
     async handleLogin(e) {
@@ -669,12 +697,17 @@ class AdminApp {
         document.getElementById('preview-dark').style.backgroundImage = card.img_dark_path ? `url('../${card.img_dark_path}')` : 'none';
         document.getElementById('preview-light').style.backgroundImage = card.img_light_path ? `url('../${card.img_light_path}')` : 'none';
 
+
         document.getElementById('edit-modal').classList.remove('hidden');
+
+        // Trigger UI update to set correct hint/placeholder for the loaded card
+        if (form.kind) form.kind.dispatchEvent(new Event('change'));
     }
 
     closeModal() {
         document.getElementById('edit-modal').classList.add('hidden');
     }
+
 
     applyEdit() {
         const form = document.getElementById('edit-form');

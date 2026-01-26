@@ -331,6 +331,7 @@ body {
     margin-bottom: 1.25rem;
 }
 
+
 .form-group label {
     display: block;
     margin-bottom: 0.5rem;
@@ -352,8 +353,14 @@ select {
     transition: border-color 0.2s, background 0.2s;
 }
 
+textarea {
+    resize: none;
+    /* User cannot resize */
+}
+
 input:focus,
 textarea:focus,
+
 select:focus {
     outline: none;
     border-color: var(--primary);

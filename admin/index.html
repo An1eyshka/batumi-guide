@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Batumi Guide - Admin</title>
-    <link rel="stylesheet" href="admin.css?v=11">
+    <link rel="stylesheet" href="admin.css?v=22">
 </head>
 
 <body>
@@ -111,22 +111,22 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label data-i18n="label_title_ru">Title (RU)</label>
-                                <input type="text" name="title_ru" placeholder="Название места">
+                                <input type="text" name="title_ru" placeholder="Название места" maxlength="40">
                             </div>
                             <div class="form-group">
                                 <label data-i18n="label_title_en">Title (EN)</label>
-                                <input type="text" name="title_en" placeholder="Place Name">
+                                <input type="text" name="title_en" placeholder="Place Name" maxlength="40">
                             </div>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
                                 <label data-i18n="label_cat_ru">Category (RU)</label>
-                                <input type="text" name="type_ru" placeholder="Текст категории">
+                                <input type="text" name="type_ru" placeholder="Текст категории" maxlength="25">
                             </div>
                             <div class="form-group">
                                 <label data-i18n="label_cat_en">Category (EN)</label>
-                                <input type="text" name="type_en" placeholder="Category text">
+                                <input type="text" name="type_en" placeholder="Category text" maxlength="25">
                             </div>
                         </div>
 
@@ -141,7 +141,10 @@
                             </div>
                             <div class="form-group">
                                 <label data-i18n="label_action_url">Action URL</label>
-                                <input type="text" name="action_url" placeholder="https://maps.google.com/...">
+                                <input type="text" name="action_url" placeholder="https://..." maxlength="500">
+                                <small id="action-url-hint" class="input-hint"
+                                    style="font-size:0.75rem; color:var(--text-secondary); display:block; margin-top:4px;">Google
+                                    Maps link</small>
                             </div>
                         </div>
 
@@ -149,11 +152,11 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label data-i18n="label_desc_ru">Description (RU)</label>
-                                <textarea name="desc_ru" rows="3"></textarea>
+                                <textarea name="desc_ru" rows="6" maxlength="140"></textarea>
                             </div>
                             <div class="form-group">
                                 <label data-i18n="label_desc_en">Description (EN)</label>
-                                <textarea name="desc_en" rows="3"></textarea>
+                                <textarea name="desc_en" rows="6" maxlength="140"></textarea>
                             </div>
                         </div>
 
@@ -213,7 +216,7 @@
         </div>
     </div>
 
-    <script src="admin.js?v=21"></script>
+    <script src="admin.js?v=22"></script>
 </body>
 
 </html>

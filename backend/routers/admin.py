@@ -163,30 +163,13 @@ async def upload_image(
     # 3. Safe Filename
     safe_filename = f"{uuid.uuid4()}{ext}"
     
-    upload_dir = os.path.join("img", "uploads")
-    os.makedirs(upload_dir, exist_ok=True)
-    # 1. Validate File Type
-    ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
-    filename = file.filename.lower()
-    ext = os.path.splitext(filename)[1]
-    
-    if ext not in ALLOWED_EXTENSIONS:
-        raise HTTPException(status_code=400, detail="Invalid file type. Only images allowed.")
-
-    if file.content_type not in ["image/jpeg", "image/png", "image/webp", "image/gif"]:
-        raise HTTPException(status_code=400, detail="Invalid content type.")
-
-    # 2. Validate Size (Read first 5MB + 1 byte)
-    MAX_FILE_SIZE = 5 * 1024 * 1024 # 5 MB
-    content = await file.read()
-    
-    if len(content) > MAX_FILE_SIZE:
-        raise HTTPException(status_code=400, detail="File too large. Max 5MB.")
-
-    # 3. Safe Filename
-    safe_filename = f"{uuid.uuid4()}{ext}"
-    
-    upload_dir = os.path.join("img", "uploads")
+    # Construct absolute path to root/img/uploads
+    # __file__ = backend/routers/admin.py
+    # dirname = backend/routers
+    # dirname = backend
+    # dirname = root
+    root_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    upload_dir = os.path.join(root_dir, "img", "uploads")
     os.makedirs(upload_dir, exist_ok=True)
     
     file_path = os.path.join(upload_dir, safe_filename)
